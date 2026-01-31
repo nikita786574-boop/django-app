@@ -1,58 +1,5 @@
 {%extends 'base.html'%}
-{%block style%}
-<style>
-    .grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-}
 
-.card {
-    background: #ffffff;
-    border-radius: 12px;
-    padding: 16px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 24px rgba(0,0,0,0.12);
-}
-
-.card h4 {
-    margin: 0 0 10px 0;
-    font-size: 18px;
-}
-
-.card h4 a {
-    text-decoration: none;
-    color: #333;
-}
-
-.description {
-    font-size: 14px;
-    color: #666;
-    margin-bottom: 14px;
-}
-
-.card-actions {
-    display: flex;
-    justify-content: space-between;
-    font-size: 14px;
-}
-
-.card-actions a {
-    text-decoration: none;
-    color: #2b6cb0;
-}
-
-.card-actions a.danger {
-    color: #c53030;
-}
-
-</style>
-{%endblock%}
 {%block content%}
 {% if parameters_goal %}
     <div class="grid">

@@ -8,7 +8,128 @@
         <title>
         {%block title%}{%endblock%}
         </title>
-        {%block style%}{%endblock%}
+        {%block style%}
+        <style>
+      .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+}
+
+.card h4 {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+}
+
+.card h4 a {
+    text-decoration: none;
+    color: #333;
+}
+
+.description {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 14px;
+}
+
+.card-actions {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+}
+
+.card-actions a {
+    text-decoration: none;
+    color: #2b6cb0;
+}
+
+.card-actions a.danger {
+    color: #c53030;
+}
+          
+
+.header{
+    background-color: #ccc;
+    height:40px;
+    border: 10px;
+    border-color:#F5059A;
+}
+body{
+    margin-bottom: 80px;
+}
+
+.footer{
+    background-color: #ccc;
+    height: 80px;
+    position:fixed;
+    width:99%;
+    bottom:0;
+}
+.sidebar {
+    height:40px;
+    background-color: #eee;
+}
+
+/*#content {
+    height: 280px;
+
+}*/
+.header button{
+    height: 34px;
+
+}
+
+.content-wrapper{
+    display: flex;
+    align-items: stretch;
+}
+
+.content-left{
+    width: 34%;
+    background-color: #CC00CC;
+}
+.content-middle{
+    width: 33%;
+    background-color: #F5059A;
+}
+.content-right{
+    width: 33%;
+    background-color: #CCAACC;
+}
+
+.button-div{
+    float:left;
+    height:34px;
+    background-color:#000000;
+    border-right: 3px solid green;
+    border-left: 3px solid green;
+    border-bottom: 3px solid green;
+    border-top: 3px solid green;
+    border-radius: 10px;
+}
+
+.button-parameter{
+    border: 2px solid red;
+    background-color:transparent;
+}
+
+.button-parameter:first-child p{
+    border:2px solid blue;
+}
+        </style>{%endblock%}
         <link href="{% static 'css/style.css'%}" rel="stylesheet" type="text/css"/>
     </head>
     <body style="background-color:aquamarine">
