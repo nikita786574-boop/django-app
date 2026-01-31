@@ -1,0 +1,69 @@
+{%extends "base.html"%}
+{%block title%}Главная страница{%endblock%}
+
+{%block content%}
+<div class="content-wrapper">
+<div class="content-left">
+    <p>Системы и подсистемы</p>
+    {% if subsystems %}
+        <table>
+            <thead>
+                <tr>
+                    <td>Имя</td><td>Описание</td><td>Действие</td>
+                </tr>
+            </thead>
+            {%for system in subsystems%}
+                <tr>
+                    <td><a href="/show/subsystem/{{system.name}}">{{system.name}}</a></td><td>{{system.description}}</td><td><a href="/edit/subsystem/{{system.name}}">Изменить</a></td><td><a href="/del/system/{{system.name}}">Удалить</a></td>
+                </tr>
+            {%empty%}
+            <div>
+                <p>Нету подсистем</p>
+            </div>
+            {%endfor%}
+        </table>
+    {%else%}
+    <div>
+        <p>Нету подсистем</p>
+    </div>
+    {%endif%}
+</div>
+<div class="content-middle">
+    <p>Параметры</p>
+    {%if parameters%}
+        <table>
+            <thear>
+                <tr>
+                    <td>Имя</td><td>Описание</td><td>Действие</td>
+                </tr>
+            </thear>
+        {%for parameter in parameters%}
+                <tr>
+                    <td>{{parameter.name}}</td><td>{{parameter.description}}</td><td><a href='/edit/parameter/{{parameter.name}}'>Изменить</a></td><td><a href='/goal_parameter/{{parameter.name}}'>Целевой параметер</a></td><td><a href="/del/parameter/{{parameter.name}}">Удалить</a></td>
+                </tr>
+        {%endfor%}
+        </table>
+    {%endif%}
+</div>
+<div class="content-right">
+    <p>Связи между параметрами: ParameterRelations</p>
+    {%if parameter_relations%}
+    <table>
+        <thead>
+            <tr>
+                <td>На кого влияют</td><td>Кто влияет</td><td>Действие</td>
+            </tr>
+        </thead>
+        {%for parameter_rel in parameter_relations%}
+            <tr>
+               <td>{{parameter_rel.to_parameter}}</td><td>{{parameter_rel.from_parameter}}</td><td><a href='/edit/parameter_relations/{{parameter_rel.to_parameter.name}}/{{parameter_rel.from_parameter.name}}'>Изменить</a></td><td><a href="del/parameter_relations/{{parameter_rel.to_parameter.name}}/{{parameter_rel.from_parameter.name}}">Удалить</a></td>
+            </tr>
+        {%endfor%}
+    </table>
+    {%else%}
+        <p>Нету связей между параметрами</p>
+    {%endif%}
+</div>
+</div>
+
+{%endblock%}

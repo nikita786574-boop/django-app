@@ -1,0 +1,21 @@
+<ul>
+    {%for node in nodes%}
+        <li>
+            <a href="/show/system/{{node.name}}"><button type="button">{{node.name}}</button></a>
+            {%if parameter_flag%}
+                {%if node.parameters.all%}
+                    <ul>
+                        {%for parameter in node.parameters.all%}
+                        <li>{{parameter.name}}</li><!--<input type="checkbox" name="{{parameter.name}}" value="{{node.name}}"></li>-->
+                        {%endfor%}
+                    </ul>
+                {%endif%}
+            {%endif%}
+            {% if node.children.all %}
+            {%include "app/tree.html" with nodes=node.children.all%}
+            {%endif%}
+        </li>
+
+    {%endfor%}
+
+</ul>

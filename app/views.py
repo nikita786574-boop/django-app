@@ -1,0 +1,239 @@
+from django.shortcuts import render, get_object_or_404
+from .models import SubSystem, Parameters , ParameterRelations
+from django.http import Http404, HttpResponseRedirect, HttpResponse
+from django.utils.safestring import mark_safe
+from .forms import SubSystemForm, ParametersForm, ParameterRelationsForm
+
+
+
+
+
+buttons_list = [
+    {'title': 'Главная страница',                        'name_url': 'main_page',               'additional_parameter':None},
+    {'title': 'Форма для subsystem',                     'name_url': 'subsystem_form',          'additional_parameter':None},
+    {'title': 'Форма для parameter',                     'name_url': 'parameters_form',         'additional_parameter':None},
+    {'title': 'Форма для parameter relations',           'name_url': 'parameter_relations_form','additional_parameter':None},
+    {'title': 'Форма для начала процесса',               'name_url': 'goal_parameter',          'additional_parameter':None},
+    {'title': 'Форма для отображения начатых процессов', 'name_url': 'show_processes',          'additional_parameter':None},
+]
+
+
+
+
+def edit_subsystem(request, subsystem_name):
+    system = get_object_or_404(SubSystem, name=subsystem_name)
+    if request.method=='POST':
+        form = SubSystemForm(request.POST, instance=system)
+        form.save()
+        return HttpResponseRedirect('/')
+    form = SubSystemForm(instance=system)
+    return render(request, 'app/form_template.html', context = {'form': form})
+def edit_parameter(request, parameter_name):
+    parameter = get_object_or_404(Parameters, name=parameter_name)
+    if request.method == 'POST':
+
+        form= ParametersForm(request.POST,instance = parameter)
+        form.save()
+        return HttpResponseRedirect('/')
+    form = ParametersForm(instance=parameter)
+    return render(request, 'app/form_template.html', context={"form":form})
+
+def view_main(request):
+    subsystems = SubSystem.objects.filter(is_root = True)
+    parameters = Parameters.objects.all()
+    parameter_relations = ParameterRelations.objects.all()
+    return render(request, 'app/main2.html', context={'subsystems':subsystems, 'parameters':parameters, 'parameter_relations':parameter_relations})
+
+def subsystem_form(request):
+    form = SubSystemForm()
+    if request.method =="POST":
+        form =SubSystemForm(request.POST)    
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect('/')
+
+    return render(request, template_name='app/form_template.html', context={'form':form, 'title':'SubSystem Form'})
+
+def parameters_form(request, name_system=None):
+    form = ParametersForm()
+    if request.method == 'POST':
+        form = ParametersForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect('/')
+    if name_system!=None:
+        system = get_object_or_404(SubSystem, name= name_system)
+        form=ParametersForm(initial={'subsystem':system})
+    return render(request, template_name ='app/form_template.html', context={'form':form, 'title':'Parameters form'})
+
+def parameter_relations_form(request, to_parameter=None, from_parameter=None):
+    form = ParameterRelationsForm()
+    if request.method=='POST':
+        form = ParameterRelationsForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect('/')
+    if request.method=='GET' and to_parameter != None and from_parameter!=None:
+        relation = get_object_or_404(ParameterRelations, to_parameter__name=to_parameter, from_parameter__name=from_parameter)
+        print(relation)
+        if relation:
+            form = ParameterRelationsForm( instance=relation)
+
+    return render(request, template_name = 'app/form_template.html', context={'form':form, 'title':'Parameter Relation Form'})
+
+
+def show_tree(request, name_system):
+    system = get_object_or_404(SubSystem, name=name_system)
+    return render(request, template_name='app/show_tree.html', context={'node':system})
+
+def show_system(request, name_system):
+    system = get_object_or_404(SubSystem, name = name_system)
+    return render(request, template_name = 'app/show_system.html', context={'system':system})
+
+
+def goal_parameter(request, name_goal_parameter=None):
+    #Должен быть участником какой-то подсистемы
+    #Создаём связи в таблице relation
+    if name_goal_parameter!=None:
+        parameter=get_object_or_404(Parameters, name=name_goal_parameter)
+        system = parameter.subsystem
+        # кнопка начать процесс нажата
+        if not system:
+            title='Ошибка'
+            content = mark_safe("""
+<h2>Параметер не привязан к какой-либо системе</h2>""")
+            return render(request,'app/with_context.html',context={'title':title, 'content':content})
+        
+
+        #Надо создать много связей в parameter relations
+        children = system.children
+        print(type(children))
+        for child in children.all():
+            for param in child.parameters.all():
+                rel = ParameterRelations(
+                    to_parameter = parameter,
+                    from_parameter = param,
+                    is_affect =None
+                )
+                rel.save()
+        return HttpResponseRedirect('/')
+
+        if request.method=='POST':
+            data = dict(request.POST)
+            del data['csrfmiddlewaretoken']
+            for key in data.keys():
+                value = request.POST[key]
+                from_parameter_rel = Parameters.objects.get(name=key, subsystem__name=value)
+                form = ParameterRelations(to_parameter=parameter, from_parameter=from_parameter_rel)
+                form.save()
+                return HttpResponseRedirect('/')
+        return render(request, 'app/tree_parameter.html', context={'parameter':parameter, 'system':system})
+    else:
+        parameters=Parameters.objects.exclude(subsystem=None)
+        string=''
+        for param in parameters:
+            string +=f"""
+<div>
+<a href='/goal_parameter/{param.name}'><button>{param.name}</button></a>
+<p>{param}</p>
+</div>
+"""
+        
+        return render(request, 'app/with_context.html', context={'title':'параметры', 'content':mark_safe(string)})
+    
+
+
+def del_object(request,name_system=None, name_parameter=None, name_to_parameter=None, name_from_parameter=None):
+    if name_system!=None:
+        system = get_object_or_404(SubSystem, name= name_system)
+        system.delete()
+    elif name_parameter!=None:
+        parameter=get_object_or_404(Parameters, name=name_parameter)
+        parameter.delete()
+    else:
+        parameter_relations = get_object_or_404(ParameterRelations, to_parameter__name=name_to_parameter, from_parameter__name = name_from_parameter)
+        parameter_relations.delete()
+    return HttpResponseRedirect('/')
+
+
+def show_processes(request):
+    #Сдесь же создание процесса
+    #Выводить начатые процессы
+    if request.method=='GET':
+        #Надо найти незаконченные процессы
+        # При нажатии надо продолжать процесс
+        #Пока что при нажатии на процесс можно просто выкидывать следующую форму
+        # Когда пользователь её заполняет, его будет перекидывать на страницу с
+        # процессами. 
+        part_process = ParameterRelations.objects.filter(is_affect__isnull=True)
+        #Я буду выводить кнопку для следующего этапа в процессе.
+        to_rel =list()
+        for data in part_process:
+            if data.to_parameter not in to_rel:
+                to_rel.append(data.to_parameter)
+        #минимальная подсистема и минимальный номер параметра
+        result=[]
+        for goal_parameter in to_rel:
+            parameters = []
+            for data in part_process:
+                if data.to_parameter == goal_parameter:
+                    parameters.append(data.from_parameter)
+            print(parameters)
+            min_number_systems=10000
+            min_param=None
+            min_param_num=100000
+            for param in parameters:
+                sys_num = param.subsystem.number
+                if sys_num<=min_number_systems:
+                    min_number_systems=sys_num
+                    if min_param_num>param.number:
+                        min_param_num = param.number
+                        min_param=param
+            result.append((min_param, goal_parameter))
+        
+        return render(request, template_name='app/processes.html', context={'pairs':result})
+
+
+def form_goal_parameter(request, name_goal_parameter, name_min_parameter):
+    rel = get_object_or_404(ParameterRelations, to_parameter__name=name_goal_parameter, from_parameter__name=name_min_parameter)
+
+    if request.method=='POST':
+        data = request.POST
+        form = ParameterRelationsForm(request.POST, instance=rel)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(f"/form_goal_parameter/{{goal_parameter.name}}/{{min_parameter.name}}")
+        
+    rel = get_object_or_404(ParameterRelations, to_parameter__name=name_goal_parameter, from_parameter__name=name_min_parameter)
+    form = ParameterRelationsForm(instance=rel)
+    return render(request, template_name="app/form_goal_parameter.html",
+                   context={
+            'form': form,
+            'goal': rel.to_parameter,
+            'source': rel.from_parameter
+        })
+
+def parameters_tree(request, system):
+    system = SubSystem.objects.get(name=system)
+    return render(request, template_name='app/subsystem/parameter_tree.html', context={'nodes':[system], 'parameter_flag':True})
+
+def parameters_tree_goal(request, system):
+    # Надо отобразить все целевые параметры, которые есть у системы
+    system=SubSystem.objects.get(name=system)
+    parameters = system.parameters.all()
+    parameters_goal = []
+    for parameter in parameters:
+        if len(ParameterRelations.objects.filter(to_parameter__name=parameter.name)):
+            parameters_goal.append(parameter)
+    return render(request, template_name='app/subsystem/parameter_goal.html', context={'nodes':[system], 'parameter_flag':True, 'parameters_goal':parameters_goal})
+
+
+def parameters_tree_goal_show(request, parameter, system):
+    system=SubSystem.objects.get(name=system)
+    parameters = system.parameters.all()
+    parameters_with_goal = []
+    parameters_goal=[]
+    for parameter in parameters:
+        if len(ParameterRelations.objects.filter(to_parameter__name=parameter.name)):
+            parameters_goal.append(parameter)
+    return render(request, template_name='app/subsystem/parameter_goal.html', context={'nodes':[system], 'parameter_flag':True, 'parameters_goal':parameters_goal})

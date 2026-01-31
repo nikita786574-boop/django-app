@@ -1,0 +1,38 @@
+
+{% load static %}
+{%load blog_tags %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>
+        {%block title%}{%endblock%}
+        </title>
+        {%block style%}{%endblock%}
+        <link href="{% static 'css/style.css'%}" rel="stylesheet" type="text/css"/>
+    </head>
+    <body style="background-color:aquamarine">
+        <header>
+            <div class="header">
+                {%buttons%}
+            </div>
+        </header>
+        <sidebar>
+            <div class="sidebar">
+                {%block sidebar%}Слова для sidebar{%endblock%}
+            </div>
+        </sidebar>
+        <div id="content" >
+            {%block content%}
+            {%endblock%}
+        </div>
+
+        <footer >
+            <div class="footer" >
+                Подвал
+            </div>
+        </footer>
+
+    </body>
+
+</html>

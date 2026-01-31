@@ -1,0 +1,79 @@
+{%extends 'base.html'%}
+
+{%block title%}
+{%endblock%}
+
+{%block style%}
+<style>
+    .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+}
+
+.card h4 {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+}
+
+.card h4 a {
+    text-decoration: none;
+    color: #333;
+}
+
+.description {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 14px;
+}
+
+.card-actions {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+}
+
+.card-actions a {
+    text-decoration: none;
+    color: #2b6cb0;
+}
+
+.card-actions a.danger {
+    color: #c53030;
+}
+
+</style>
+{%endblock%}
+
+{%block sidebar%}
+<div class='button-sidebar'>
+<a href='/'><button>Главная страница</button></a>
+</div>
+{%endblock%}
+
+{%block content%}
+{% if pairs %}
+    <div class="grid">
+        {%for min_parameter, goal_parameter in pairs%}
+            <div class="card">
+                <a href="/form_goal_parameter/{{goal_parameter.name}}/{{min_parameter.name}}"><button>{{goal_parameter.name}}</button></a>
+                <div class="description">{{min_parameter.name}}</div>
+            </div>
+            
+        {%endfor%}
+    </div>
+{%endif%}
+{%endblock%}

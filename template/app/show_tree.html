@@ -1,0 +1,26 @@
+{%extends 'base.html'%}
+{%load blog_tags %}
+
+
+{%if sidebar%}
+    {%block sidebar%}
+        {%buttons_sidebar node.name%}
+    {%endblock%}
+{%endif%}
+
+{% block title%}Дерево структуры{%endblock%}
+
+{%block content%}
+    <ul>
+        <li>
+            <a href="/show/system/{{node.name}}"><button>{{node.name}}</button></a>
+            {%if node.children.all%}
+
+            {%include 'app/tree.html' with nodes=node.children.all%}
+
+            {%else%}
+            <br><p>Нет Подсистем</p>
+            {%endif%}
+        </li>
+    </ul>
+{%endblock%}

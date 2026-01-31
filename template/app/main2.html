@@ -1,0 +1,128 @@
+{%extends "base.html"%}
+{%block title%}Главная страница{%endblock%}
+
+{%block style%}
+<style>
+    .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+}
+
+.card h4 {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+}
+
+.card h4 a {
+    text-decoration: none;
+    color: #333;
+}
+
+.description {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 14px;
+}
+
+.card-actions {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+}
+
+.card-actions a {
+    text-decoration: none;
+    color: #2b6cb0;
+}
+
+.card-actions a.danger {
+    color: #c53030;
+}
+
+</style>
+{%endblock%}
+
+{%block content%}
+<div class="content-wrapper">
+
+<div class="content-left">
+    <h3>Системы и подсистемы</h3>
+
+    {% if subsystems %}
+    <div class="grid">
+        {% for system in subsystems %}
+        <div class="card">
+            <h4>
+                <a href="/show/subsystem/{{ system.name }}">
+                    {{ system.name }}
+                </a>
+            </h4>
+
+            <p class="description">
+                {{ system.description|default:"Без описания" }}
+            </p>
+
+            <div class="card-actions">
+                <a href="/edit/subsystem/{{ system.name }}">✏️ Изменить</a>
+                <a href="/del/system/{{ system.name }}" class="danger">🗑 Удалить</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+        <p>Нету подсистем</p>
+    {% endif %}
+</div>
+<div class="content-middle">
+    <p>Параметры</p>
+    {%if parameters%}
+        <table>
+            <thear>
+                <tr>
+                    <td>Имя</td><td>Описание</td><td>Действие</td>
+                </tr>
+            </thear>
+        {%for parameter in parameters%}
+                <tr>
+                    <td>{{parameter.name}}</td><td>{{parameter.description}}</td><td><a href='/edit/parameter/{{parameter.name}}'>Изменить</a></td><td><a href='/goal_parameter/{{parameter.name}}'>Целевой параметер</a></td><td><a href="/del/parameter/{{parameter.name}}">Удалить</a></td>
+                </tr>
+        {%endfor%}
+        </table>
+    {%endif%}
+</div>
+<div class="content-right">
+    <p>Связи между параметрами: ParameterRelations</p>
+    {%if parameter_relations%}
+    <table>
+        <thead>
+            <tr>
+                <td>На кого влияют</td><td>Кто влияет</td><td>Действие</td>
+            </tr>
+        </thead>
+        {%for parameter_rel in parameter_relations%}
+            <tr>
+               <td>{{parameter_rel.to_parameter}}</td><td>{{parameter_rel.from_parameter}}</td><td><a href='/edit/parameter_relations/{{parameter_rel.to_parameter.name}}/{{parameter_rel.from_parameter.name}}'>Изменить</a></td><td><a href="del/parameter_relations/{{parameter_rel.to_parameter.name}}/{{parameter_rel.from_parameter.name}}">Удалить</a></td>
+            </tr>
+        {%endfor%}
+    </table>
+    {%else%}
+        <p>Нету связей между параметрами</p>
+    {%endif%}
+</div>
+</div>
+
+{%endblock%}

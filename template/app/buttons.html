@@ -1,0 +1,12 @@
+{%if all_buttons %}
+    {% for button in all_buttons%}
+        <div class='button-div'>
+        {%if button.additional_parameter %}
+        <a href="{% url button.name_url button.additional_parameter %}">
+        {%else%}
+        <a href="{% url button.name_url %}">
+        {%endif%}
+            <button>{{ button.title }}</button></a>
+        </div>
+    {%endfor%}
+{%endif%}

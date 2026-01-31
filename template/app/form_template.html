@@ -1,0 +1,18 @@
+{%extends 'base.html' %}
+
+
+
+{%block title%}
+{{title}}
+{%endblock%}
+
+{%block content%}
+<form method="post">
+    <fieldset>
+    {{ form.as_p }}
+    {%csrf_token%}
+    <input type="submit" value="Отправить данные"></input>
+    <input type="reset" value="Отмена"></input>
+    </fieldset>
+</form>
+{% endblock %}

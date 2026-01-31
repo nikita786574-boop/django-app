@@ -1,0 +1,18 @@
+{%extends 'base.html'%}
+
+{%block title%}Дерево {{parameter.name}}{%endblock%}
+
+{%block content%}
+
+<p><h2>Параметр: </h2>{{parameter.name}}</p>
+<p><h2>Система: </h2>{{system.name}}</p>
+<p><h2>Параметры нижних уровней для этой подсистемы</h2></p>
+<form method="post">
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{csrf_token}}"/>
+    {%include 'app/tree.html' with nodes=system.children.all parameter_flag=True%}
+    <input type="submit"/>
+</form>
+
+
+
+{%endblock%}

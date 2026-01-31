@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}
+Goal parameter
+{% endblock %}
+
+{% block content %}
+
+<h2>
+    Влияет ли параметр <b>{{ source.name }}</b>
+    на <b>{{ goal.name }}</b>?
+</h2>
+
+<form method="post">
+    {% csrf_token %}
+
+    {{ form.non_field_errors }}
+
+    <div>
+        {{ form.is_affect }}
+        <label for="{{ form.is_affect.id_for_label }}">
+            Да, влияет
+        </label>
+    </div>
+
+    <button type="submit">Сохранить</button>
+</form>
+
+{% endblock %}

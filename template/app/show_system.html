@@ -1,0 +1,26 @@
+{%extends 'base.html'%}
+
+
+
+{%block title%}System {{system.name}}{%endblock%}
+
+{%block content%}
+    <div><p>{{system.name}}</p></div>
+    <div><p style="font-size:20px; color:rgb(57, 226, 125);">Описание</p></div>
+    <div><p>{{system.description}}</p></div>
+    <div>
+        <label><p style="font-size:20px; color:rgb(57, 226, 125);">Параметры системы</p></label>
+        <ul>
+
+            {% for parameter in system.parameters.all %}
+                <li><a href="/edit/parameter/{{parameter.name}}">{{parameter.name}}</a></li>
+                {% if forloop.last%}<li><p><a href="/parameter/{{system.name}}"><button>Добавить параметры</button></a></p></li>
+                {%endif%}
+            {% empty %}
+            <li>
+                <p>Нет параметров</p><p><a href="/parameter/{{system.name}}"><button>Добавить</button></a></p>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+{%endblock%}
