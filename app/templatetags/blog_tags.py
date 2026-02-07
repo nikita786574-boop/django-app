@@ -18,8 +18,6 @@ def buttons():
 
 @register.inclusion_tag('app/buttons.html', name='buttons_sidebar')
 def buttons_sidebar(syst):
-    
-
     buttons_list_new = [
         {'title': 'Все параметры',
             'name_url':'parameters_tree',
@@ -29,3 +27,17 @@ def buttons_sidebar(syst):
          'additional_parameter': syst}
     ]
     return {'all_buttons': buttons_list_new,'sidebar':True}
+
+@register.inclusion_tag('app/buttons.html', name='buttons_sidebar_main_page')
+def buttons_sidebar_main_page():
+    buttons_list_new=[
+        {   'title': 'Все параметры',
+            'name_url': 'all_parameters',
+            'additional_parameter': None},
+        {
+            'title':'Все связи между параметрами',
+            'name_url': 'all_parameter_relations',
+            'additional_parameter': None
+        }
+    ]
+    return {'all_buttons': buttons_list_new, 'sidebar':True}

@@ -21,7 +21,9 @@ urlpatterns = [
     path("goal_parameter/", view=views.goal_parameter, name='goal_parameter'),
 
 
-    path("form_goal_parameter/<str:name_goal_parameter>/<str:name_min_parameter>", views.form_goal_parameter, name='form_goal_parameter'),
+    path("form_goal_parameter/<str:name_goal_parameter>/<str:name_min_parameter>", 
+         views.form_goal_parameter, 
+         name='form_goal_parameter'),
 
     #buttons in sidebar
     path(
@@ -66,5 +68,15 @@ urlpatterns = [
     path(   route='show_processes/', 
             view = views.show_processes, 
             name='show_processes'),
+     #sidebar main_page
+     path( route='all_parameters/',
+          view = views.all_parameters,
+          name='all_parameters',
+          ),
 
+     path( 
+          route='all_parameter_relations/',
+          view=views.all_parameter_relations,
+          name='all_parameter_relations',
+     ),
 ]

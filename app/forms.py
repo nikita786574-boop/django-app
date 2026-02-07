@@ -19,3 +19,15 @@ class ParameterRelationsForm(forms.ModelForm):
         widgets = {
             'is_affect': forms.CheckboxInput()
         }
+
+class ParameterRelationsFormSecond(forms.ModelForm):
+    is_affect = forms.ChoiceField(
+        choices = [
+            (True, 'Да, влияет'),
+            (False, 'Нет, не влияет')
+        ],
+        widget = forms.RadioSelect
+    )
+    class Meta:
+        model = ParameterRelations
+        fields=['is_affect']
