@@ -1,0 +1,21 @@
+{%extends 'base.html'%}
+
+{%block content%}
+<div class="content-middle">
+    <p>Параметры</p>
+    {%if parameters%}
+        <table>
+            <thear>
+                <tr>
+                    <td>Имя</td><td>Описание</td><td>Действие</td>
+                </tr>
+            </thear>
+        {%for parameter in parameters%}
+                <tr>
+                    <td>{{parameter.name}}</td><td>{{parameter.description}}</td><td><a href='/edit/parameter/{{parameter.name}}'>Изменить</a></td><td><a href='/goal_parameter/{{parameter.name}}'>Целевой параметер</a></td><td><a href="/del/parameter/{{parameter.name}}">Удалить</a></td>
+                </tr>
+        {%endfor%}
+        </table>
+    {%endif%}
+</div>
+{%endblock%}

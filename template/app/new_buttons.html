@@ -1,0 +1,9 @@
+{% if all_buttons %}
+    {% for button in all_buttons %}
+        <div class="button-div">
+            <a href="{{ button.url }}" class="button">
+                <button>{{ button.title }}</button>
+            </a>
+        </div>
+    {% endfor %}
+{% endif %}

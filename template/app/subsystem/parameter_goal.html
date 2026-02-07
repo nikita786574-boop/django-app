@@ -6,7 +6,7 @@
         {% for paramet in parameters_goal %}
         <div class="card">
             <h4>
-                <a href="">
+                <a href="{%url 'parameters_tree_goal_show' paramet.name nodes.0.name%}">
                     {{ paramet.name }}
                 </a>
             </h4>

@@ -1,0 +1,588 @@
+[
+{
+  "model": "auth.permission",
+  "pk": 1,
+  "fields": {
+    "name": "Can add log entry",
+    "content_type": 1,
+    "codename": "add_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 2,
+  "fields": {
+    "name": "Can change log entry",
+    "content_type": 1,
+    "codename": "change_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 3,
+  "fields": {
+    "name": "Can delete log entry",
+    "content_type": 1,
+    "codename": "delete_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 4,
+  "fields": {
+    "name": "Can view log entry",
+    "content_type": 1,
+    "codename": "view_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 5,
+  "fields": {
+    "name": "Can add permission",
+    "content_type": 2,
+    "codename": "add_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 6,
+  "fields": {
+    "name": "Can change permission",
+    "content_type": 2,
+    "codename": "change_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 7,
+  "fields": {
+    "name": "Can delete permission",
+    "content_type": 2,
+    "codename": "delete_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 8,
+  "fields": {
+    "name": "Can view permission",
+    "content_type": 2,
+    "codename": "view_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 9,
+  "fields": {
+    "name": "Can add group",
+    "content_type": 3,
+    "codename": "add_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 10,
+  "fields": {
+    "name": "Can change group",
+    "content_type": 3,
+    "codename": "change_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 11,
+  "fields": {
+    "name": "Can delete group",
+    "content_type": 3,
+    "codename": "delete_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 12,
+  "fields": {
+    "name": "Can view group",
+    "content_type": 3,
+    "codename": "view_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 13,
+  "fields": {
+    "name": "Can add user",
+    "content_type": 4,
+    "codename": "add_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 14,
+  "fields": {
+    "name": "Can change user",
+    "content_type": 4,
+    "codename": "change_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 15,
+  "fields": {
+    "name": "Can delete user",
+    "content_type": 4,
+    "codename": "delete_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 16,
+  "fields": {
+    "name": "Can view user",
+    "content_type": 4,
+    "codename": "view_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 17,
+  "fields": {
+    "name": "Can add content type",
+    "content_type": 5,
+    "codename": "add_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 18,
+  "fields": {
+    "name": "Can change content type",
+    "content_type": 5,
+    "codename": "change_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 19,
+  "fields": {
+    "name": "Can delete content type",
+    "content_type": 5,
+    "codename": "delete_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 20,
+  "fields": {
+    "name": "Can view content type",
+    "content_type": 5,
+    "codename": "view_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 21,
+  "fields": {
+    "name": "Can add session",
+    "content_type": 6,
+    "codename": "add_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 22,
+  "fields": {
+    "name": "Can change session",
+    "content_type": 6,
+    "codename": "change_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 23,
+  "fields": {
+    "name": "Can delete session",
+    "content_type": 6,
+    "codename": "delete_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 24,
+  "fields": {
+    "name": "Can view session",
+    "content_type": 6,
+    "codename": "view_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 25,
+  "fields": {
+    "name": "Can add parameter relations",
+    "content_type": 7,
+    "codename": "add_parameterrelations"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 26,
+  "fields": {
+    "name": "Can change parameter relations",
+    "content_type": 7,
+    "codename": "change_parameterrelations"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 27,
+  "fields": {
+    "name": "Can delete parameter relations",
+    "content_type": 7,
+    "codename": "delete_parameterrelations"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 28,
+  "fields": {
+    "name": "Can view parameter relations",
+    "content_type": 7,
+    "codename": "view_parameterrelations"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 29,
+  "fields": {
+    "name": "Can add parameters",
+    "content_type": 8,
+    "codename": "add_parameters"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 30,
+  "fields": {
+    "name": "Can change parameters",
+    "content_type": 8,
+    "codename": "change_parameters"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 31,
+  "fields": {
+    "name": "Can delete parameters",
+    "content_type": 8,
+    "codename": "delete_parameters"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 32,
+  "fields": {
+    "name": "Can view parameters",
+    "content_type": 8,
+    "codename": "view_parameters"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 33,
+  "fields": {
+    "name": "Can add sub system",
+    "content_type": 9,
+    "codename": "add_subsystem"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 34,
+  "fields": {
+    "name": "Can change sub system",
+    "content_type": 9,
+    "codename": "change_subsystem"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 35,
+  "fields": {
+    "name": "Can delete sub system",
+    "content_type": 9,
+    "codename": "delete_subsystem"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 36,
+  "fields": {
+    "name": "Can view sub system",
+    "content_type": 9,
+    "codename": "view_subsystem"
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 1,
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$PRSvCBzeFASRC9AM4XOMEX$K5WL268uxsFq2WI6N7eJJCs+JSxLhCzcC8gvk0AB8Ig=",
+    "last_login": "2026-01-17T15:56:27.969Z",
+    "is_superuser": true,
+    "username": "user",
+    "first_name": "",
+    "last_name": "",
+    "email": "",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-01-17T15:55:29.886Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 1,
+  "fields": {
+    "app_label": "admin",
+    "model": "logentry"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 2,
+  "fields": {
+    "app_label": "auth",
+    "model": "permission"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 3,
+  "fields": {
+    "app_label": "auth",
+    "model": "group"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 4,
+  "fields": {
+    "app_label": "auth",
+    "model": "user"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 5,
+  "fields": {
+    "app_label": "contenttypes",
+    "model": "contenttype"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 6,
+  "fields": {
+    "app_label": "sessions",
+    "model": "session"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 7,
+  "fields": {
+    "app_label": "app",
+    "model": "parameterrelations"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 8,
+  "fields": {
+    "app_label": "app",
+    "model": "parameters"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 9,
+  "fields": {
+    "app_label": "app",
+    "model": "subsystem"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "awa35itlr9csihqsiu4ppu1ft6ypaq60",
+  "fields": {
+    "session_data": ".eJxVjDEOAiEQRe9CbQgDCGppv2cgwzDIqoFk2a2Md1eSLbT9773_EgG3tYSt8xLmJC4CxOF3i0gPrgOkO9Zbk9TqusxRDkXutMupJX5ed_fvoGAvoyatPasMBMDk8tEbPJlzBBeRjfNMYCgRgjKgM1uF1mo230olcgji_QHz2zgv:1vh8f5:1CgeWcw6VtIW0oEQ-NB472_Sw5RmS6S8yleRlT8BMt4",
+    "expire_date": "2026-01-31T15:56:27.993Z"
+  }
+},
+{
+  "model": "app.subsystem",
+  "pk": 1,
+  "fields": {
+    "name": "Компьютер",
+    "description": "ff",
+    "parent": null,
+    "is_root": true,
+    "number": 0
+  }
+},
+{
+  "model": "app.subsystem",
+  "pk": 3,
+  "fields": {
+    "name": "Куляр",
+    "description": "а",
+    "parent": 1,
+    "is_root": false,
+    "number": 1
+  }
+},
+{
+  "model": "app.subsystem",
+  "pk": 4,
+  "fields": {
+    "name": "Видеокарта",
+    "description": "а",
+    "parent": 1,
+    "is_root": false,
+    "number": 2
+  }
+},
+{
+  "model": "app.parameters",
+  "pk": 6,
+  "fields": {
+    "name": "Оп",
+    "description": "1",
+    "subsystem": 1,
+    "number": 1,
+    "measure": "ваты"
+  }
+},
+{
+  "model": "app.parameters",
+  "pk": 7,
+  "fields": {
+    "name": "Параметр 1 куляр",
+    "description": "а",
+    "subsystem": 3,
+    "number": 1,
+    "measure": "ваты"
+  }
+},
+{
+  "model": "app.parameters",
+  "pk": 8,
+  "fields": {
+    "name": "Параметер 2 куляр",
+    "description": "2",
+    "subsystem": 3,
+    "number": 2,
+    "measure": "ваты"
+  }
+},
+{
+  "model": "app.parameters",
+  "pk": 9,
+  "fields": {
+    "name": "Параметер 3 куляр",
+    "description": "3",
+    "subsystem": 3,
+    "number": 3,
+    "measure": "ваты"
+  }
+},
+{
+  "model": "app.parameters",
+  "pk": 12,
+  "fields": {
+    "name": "Параметр 1 видео",
+    "description": "1",
+    "subsystem": 4,
+    "number": 1,
+    "measure": "ваты"
+  }
+},
+{
+  "model": "app.parameters",
+  "pk": 13,
+  "fields": {
+    "name": "Параметр 2 видеокарт",
+    "description": "а",
+    "subsystem": 4,
+    "number": 2,
+    "measure": "ваты"
+  }
+},
+{
+  "model": "app.parameters",
+  "pk": 14,
+  "fields": {
+    "name": "Параметр 3 видеокарт",
+    "description": "3",
+    "subsystem": 4,
+    "number": 3,
+    "measure": "ваты"
+  }
+},
+{
+  "model": "app.parameterrelations",
+  "pk": 60,
+  "fields": {
+    "from_parameter": 7,
+    "to_parameter": 6,
+    "is_affect": true
+  }
+},
+{
+  "model": "app.parameterrelations",
+  "pk": 61,
+  "fields": {
+    "from_parameter": 8,
+    "to_parameter": 6,
+    "is_affect": false
+  }
+},
+{
+  "model": "app.parameterrelations",
+  "pk": 62,
+  "fields": {
+    "from_parameter": 9,
+    "to_parameter": 6,
+    "is_affect": true
+  }
+},
+{
+  "model": "app.parameterrelations",
+  "pk": 63,
+  "fields": {
+    "from_parameter": 12,
+    "to_parameter": 6,
+    "is_affect": false
+  }
+},
+{
+  "model": "app.parameterrelations",
+  "pk": 64,
+  "fields": {
+    "from_parameter": 13,
+    "to_parameter": 6,
+    "is_affect": true
+  }
+},
+{
+  "model": "app.parameterrelations",
+  "pk": 65,
+  "fields": {
+    "from_parameter": 14,
+    "to_parameter": 6,
+    "is_affect": false
+  }
+}
+]

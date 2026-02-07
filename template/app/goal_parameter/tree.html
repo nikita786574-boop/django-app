@@ -1,0 +1,27 @@
+
+<ul>
+    {%for node in nodes%}
+        <li>
+            <div>
+                <p><b>Подсистема</b>: {{node.name}}</p>
+                {%if node.parameters.all %}
+                    <ul>
+                    {%for parameter in node.parameters.all%}
+                        {%if parameter in parameter_affect_goal%}
+                            <li>
+                                <p style="color: #610329;"><b style="color: #801741;">Параметр, влияющий на целевой</b>: {{parameter.name}}</p>
+                            </li>
+                        {%endif%}
+                    {%endfor%}
+                    </ul>
+                {%endif%}
+                {% if node.children.all %}
+                    {%include "app/goal_parameter/tree.html" with nodes=node.children.all %}
+                {%endif%}  
+            </div>
+        </li>
+    {%endfor%}
+</ul>
+
+
+

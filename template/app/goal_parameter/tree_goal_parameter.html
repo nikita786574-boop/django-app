@@ -1,0 +1,18 @@
+{%extends 'base.html'%}
+
+{%block title%}
+
+{%endblock%}
+<!-- Выводить параметр - цель. Его подсистему и дерево. -->
+<!-- Какие переменные? nodes, parameter_affect_goal, goal_parameter-->
+{%block content%}
+<div>
+    <div>
+        <p><b>Подсистема</b>: {{nodes.0.name}}</p>
+        <p style="color: #F55CF0;"><b>Целевой параметр</b>: {{goal_parameter.name}}</p>
+    </div>
+    <div>
+        {%include "app/goal_parameter/tree.html" with nodes=nodes.0.children.all  %}
+    <div>
+</div>
+{%endblock%}

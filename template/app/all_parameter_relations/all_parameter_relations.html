@@ -1,0 +1,24 @@
+{%extends 'base.html'%}
+
+{%block content%}
+<div class="content-right">
+    <p>Связи между параметрами: ParameterRelations</p>
+    {%if parameter_relations%}
+    <table>
+        <thead>
+            <tr>
+                <td>На кого влияют</td><td>Кто влияет</td><td>Действие</td>
+            </tr>
+        </thead>
+        {%for parameter_rel in parameter_relations%}
+            <tr>
+               <td>{{parameter_rel.to_parameter}}</td><td>{{parameter_rel.from_parameter}}</td><td><a href='/edit/parameter_relations/{{parameter_rel.to_parameter.name}}/{{parameter_rel.from_parameter.name}}'>Изменить</a></td><td><a href="{% url 'del_parameter_relations' parameter_rel.to_parameter.name parameter_rel.from_parameter.name%}">Удалить</a></td>
+            </tr>
+        {%endfor%}
+    </table>
+    {%else%}
+        <p>Нету связей между параметрами</p>
+    {%endif%}
+</div>
+
+{%endblock content%}
