@@ -1,0 +1,205 @@
+{%extends 'base.html'%}
+
+{%block title%}Дерево подсистем D3{%endblock%}
+
+{%block stylein%}
+
+<style>
+    #tree-container{
+        width: 100%;
+        height: 600px;
+        border: 1px solid #ccc;
+        background: #f9f9f9;
+        overflow: hidden;
+    }
+
+    .node circle{
+        fill: #69b3a2;
+        stroke: #fff;
+        stroke-width: 2px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .node circle:hover{
+        fill: #ff6b6b;
+        r: 10;
+    }
+
+    .node text{
+        font-size: 12px;
+        font-family: sans-serif;
+        pointer-events: none;
+    }
+    .link{
+        fill: none;
+        stroke: #ccc;
+        stroke-width: 2px;
+    }
+    #node-info{
+        margin-top: 10px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        background: white;
+        min-height: 50px;
+    }
+
+    #controls{
+        margin-bottom: 10px;
+    }
+    #controls button{
+        padding: 5px 15px;
+        margin-right: 5px;
+        cursor: pointer;
+    }
+
+    
+</style>
+
+
+{%endblock%}
+
+
+
+{%block content%}
+
+<h2>Дерево подсистем: {{node.name}}</h2>
+
+<div id="controls">
+    <button onclick="resetZoom()">Сбросить зум</button>
+    <button onclick="zoomIn()">Увеличить</button>
+    <button onclick="zoomOut()">Уменьшить</button>
+</div>
+
+<div id="tree-container">
+
+</div>
+
+<div id="node-info">
+    <strong>Информация об узле:</strong>
+    <p id="info-text">Кликни на узел для просмотра информации</p>
+</div>
+
+<!--Подключить D3-->
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+
+<script>
+    const container=document.getElementById('tree-container')
+    const width = container.clientWidth;
+    const height = container.clientHeight || 600;
+
+    // Создание SVG
+
+    const svg = d3.select('#tree-container').append('svg').attr('width',width).attr('height', height).attr('xmlns', "http://www.w3.org/2000/svg");
+    
+    const g= svg.append('g');
+
+    // Zoom и Pan
+
+    const zoom = d3.zoom()
+    .scaleExtent([0.1, 4])
+    .on('zoom',(event) => {
+        g.attr('transform', event.transform)
+    });
+
+    svg.call(zoom);
+
+    //Управление зумом
+
+    function resetZoom(){
+        svg.transition().duration(750).call(zoom.transform, d3.zoomIdentity);
+    }
+    function zoomIn(){
+        svg.transition().duration(300).call(zoom.scaleBy, 1.3);
+    }
+    function zoomOut(){
+        svg.transition().duration(300).call(zoom.scaleBy, 0.7);
+    }
+
+    // Загрузка данных
+
+    const apiUrl = "{% url 'api_tree' node.name %}"
+
+    fetch(apiUrl)
+        .then(response =>{
+            if(!response.ok){
+                throw new Error("Ошибка загрузки данных "+response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            //Преобразование в иерархию D3
+            const root =d3.hierarchy(data);
+
+            const treeLayout = d3.tree().size([height-100, width-200]);
+            treeLayout(root);
+
+            //Рисуем связи Link
+            g.selectAll(".link")
+                .data(root.links())
+                .enter()
+                .append('path')
+                .attr('class','link')
+                .attr("d", d3.linkHorizontal()
+                            .x(d=>d.y+50)
+                            .y(d=>d.x+50))
+                .style('fill', 'none')
+                .style('stroke', '#ccc')
+                .style('stroke-width','2px');
+            // Рисуем узлы
+
+            const nodes = g.selectAll('.node')
+                .data(root.descendants())
+                .enter()
+                .append('g')
+                .attr('class', 'node')
+                .attr('transform', d=>`translate(${d.y+50},${d.x+50})`)
+                .on('click', function(event, d){
+                    showNodeInfo(d.data);
+                });
+
+            //Круги
+            nodes.append("circle")
+                    .attr('r', 8)
+                    .style("fill", '#69b3a2')
+                    .style('stroke', '#fff')
+                    .style('stroke-width', '2px');
+            //Текс
+            nodes.append('text')
+                    .attr('dy',4)
+                    .attr("x", d=> d.children? -15: 15)
+                    .style("text-anchor", d=> d.children? "end":"start")
+                    .text(d=>d.data.name);
+            console.log("Дерево успешно отрисовано");
+
+        })
+        .catch(error => {
+            console.error('Ошибка', error);
+            document.getElementById('info-text').textContent="Ошибка загрузки деерва "+error.message;
+        });
+    //Информация об узле
+    function showNodeInfo(data){
+        const infoDiv = document.getElementById('info-text');
+        let html = `<strong>${data.name}</strong><br>`;
+
+        if(data.description){
+            html += `<em>${data.description}</em><br>`;
+        }
+
+        if(data.children && data.children.length>0){
+           
+            html+=`<br><strong>Дочерние элементы (${data.children.length})</strong><br>`;
+            data.children.forEach(child=>{
+                html +=`- ${child.name}<br>`
+            });
+        }
+        else{
+            html+='<br>Нет дочерних элементов';
+        }
+        infoDiv.innerHTML = html;
+    }
+
+
+</script>
+
+{%endblock%}

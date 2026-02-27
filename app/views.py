@@ -8,6 +8,8 @@ from django.urls import reverse
 
 from app.forms import ParameterRelationsFormSecond
 
+from django.http import JsonResponse
+
 
 
 buttons_list = [
@@ -24,11 +26,19 @@ buttons_list = [
 
 def edit_subsystem(request, subsystem_name):
     system = get_object_or_404(SubSystem, name=subsystem_name)
+    form = SubSystemForm(instance=system)
+
     if request.method=='POST':
         form = SubSystemForm(request.POST, instance=system)
-        form.save()
-        return HttpResponseRedirect('/')
-    form = SubSystemForm(instance=system)
+        if form.is_valid():
+            print(dict(form.data)['name'][0])
+            name = dict(form.data)['name'][0]
+            print(len(list(SubSystem.objects.filter(name=name))))
+            if len(list(SubSystem.objects.filter(name=name)))!=0:
+                form.add_error('name', 'Подсистема с таким именем уже существует')
+            else:
+                form.save()
+                return HttpResponseRedirect('/')
     return render(request, 'app/form_template.html', context = {'form': form})
 
 def edit_parameter(request, parameter_name):
@@ -50,8 +60,13 @@ def subsystem_form(request):
     if request.method =="POST":
         form =SubSystemForm(request.POST)    
         if form.is_valid():
-            form.save()
-            return HttpResponseRedirect('/')
+            name = dict(form.data)['name'][0]
+            print(len(list(SubSystem.objects.filter(name=name))))
+            if len(list(SubSystem.objects.filter(name=name)))!=0:
+                form.add_error('name', 'Подсистема с таким именем уже существует')
+            else:
+                form.save()
+                return HttpResponseRedirect('/')
 
     return render(request, template_name='app/form_template.html', context={'form':form, 'title':'SubSystem Form'})
 
@@ -339,3 +354,25 @@ def all_parameter_relations(request):
 def all_parameters(request):
     parameters = Parameters.objects.all()
     return render(request, 'app/all_parameters/all_parameters.html', context={'parameters':parameters})
+
+
+
+# Api для дерева D3
+
+def api_tree(request, name_system):
+    """
+    API endpoint, который возвращает дерево в JSON формате
+    Используется D3.js для построения визуального дерева
+    """
+
+    system = get_object_or_404(SubSystem, name=name_system)
+    # Можно возращать и потомков. Он просто будет отрисо
+    # вывать дерево начиная с них
+    return JsonResponse(system.to_dict())
+
+def show_d3_tree(request, name_system):
+    """
+    Рендер страницы с d3 деревом
+    """
+    system= get_object_or_404(SubSystem, name=name_system)
+    return render(request, 'app/d3/d3_tree.html', context={'node':system})

@@ -13,6 +13,14 @@ class SubSystem(models.Model):
     number = models.IntegerField()
     def __str__(self):
         return self.name
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description or '',
+            'children': [child.to_dict() for child in self.children.all()]
+        }
 
 
 class Parameters(models.Model):
