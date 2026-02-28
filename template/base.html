@@ -67,26 +67,29 @@
         border: 10px;
         border-color:#F5059A;
     }
-    body{
-        margin-bottom: 80px;
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+    background-color: aquamarine;
+}
+
+    main{
+        flex: 1;
     }
 
     .footer{
         background-color: #ccc;
-        height: 80px;
-        position:fixed;
-        width:99%;
-        bottom:0;
+        height:20px;
+        
     }
-    .sidebar {
+    
+    .aside {
         height:40px;
         background-color: #eee;
     }
 
-    /*#content {
-        height: 280px;
-
-    }*/
     .header button{
         height: 34px;
 
@@ -142,17 +145,18 @@
                     {%buttons%}
                 </div>
             </header>
-            <sidebar>
-                <div class="sidebar">
-                    {%block sidebar%}Слова для sidebar{%endblock%}
-                </div>
-            </sidebar>
-            <div id="content" >
-                {%block content%}
-                {%endblock%}
+        
+        <aside>
+            <div class="sidebar">
+                {%block sidebar%}Слова для sidebar{%endblock%}
             </div>
-
-            <footer >
+        </aside>
+        <main >
+            {%block content%}
+            {%endblock%}
+        </main>
+        
+            <footer>
                 <div class="footer" >
                     Подвал
                 </div>

@@ -8,6 +8,21 @@
     {% buttons_sidebar_main_page %}
 {% endblock %}
 
+{%block stylein%}
+a {
+    text-decoration: none;
+    color: black;
+}
+
+a:hover {
+    color: blue;
+}
+
+a:active {
+    color: red;
+}
+{%endblock%}
+
 {% block content %}
 
 <section class="page">
@@ -24,10 +39,10 @@
                     <header class="card-header">
                         <h4>
                             <a href="/show/subsystem/{{ system.name }}">
-                                {{ system.name }}
+                                <span>{{ system.name }}</span>
                             </a>
                             <a href="{% url 'show_d3_tree' system.name %}">
-                                {{system.name}}
+                                <span>{{system.name}}</span>
                             </a>
                         </h4>
                     </header>
