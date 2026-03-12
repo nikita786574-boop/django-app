@@ -376,3 +376,12 @@ def show_d3_tree(request, name_system):
     """
     system= get_object_or_404(SubSystem, name=name_system)
     return render(request, 'app/d3/d3_tree.html', context={'node':system})
+
+def api_parameters_tree(request, name_system):
+    system = get_object_or_404(SubSystem, name = name_system)
+    return JsonResponse(system.to_dict())
+
+def show_parameters_tree(request, name_system):
+    system = get_object_or_404(SubSystem, name=name_system)
+    return render(request, 'app/d3/parameters_tree.html', {'node':system})
+

@@ -22,10 +22,10 @@ a:active {
     color: red;
 }
 body{
-    background-color: #DED745;
+    background-color: #594a02;
 }
 main {
-    background-color: #DED745;
+    background-color: #594a02;
 }
 
 {%endblock%}
@@ -50,6 +50,9 @@ main {
                             </a>
                             <a href="{% url 'show_d3_tree' system.name %}">
                                 <span>{{system.name}}</span>
+                            </a>
+                            <a href="{% url 'show_parameters_tree' system.name %}">
+                                <span>{{system.name}} параметры</span>
                             </a>
                         </h4>
                     </header>

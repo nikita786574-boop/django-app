@@ -6,8 +6,8 @@
 
 <style>
     #tree-container{
-        width: 100%;
-        height: 600px;
+        width: 60%;
+        height: 300px;
         border: 1px solid #ccc;
         background: #f9f9f9;
         overflow: hidden;
@@ -16,17 +16,17 @@
     .node circle{
         fill: #69b3a2;
         stroke: #fff;
-        stroke-width: 2px;
+        stroke-width: 10px;
         cursor: pointer;
         transition: all 0.3s;
     }
     .node circle:hover{
         fill: #ff6b6b;
-        r: 10;
+        r: 30;
     }
 
     .node text{
-        font-size: 12px;
+        font-size: 48px;
         font-family: sans-serif;
         pointer-events: none;
     }
@@ -55,6 +55,7 @@
     svg{
         color: #DED745;
         background-color: #DED745;
+        margin: 10px;
     }
 </style>
 
@@ -87,13 +88,17 @@
 <script src="https://d3js.org/d3.v7.min.js"></script>
 
 <script>
-    const container=document.getElementById('tree-container')
-    const width = container.clientWidth;
-    const height = container.clientHeight || 600;
+    setTimeout(()=>{
+        const container = document.getElementById('tree-container');
+        const width = container.clientWidth;
+        const height = container.clientHeight || 300;
 
     // Создание SVG
 
-    const svg = d3.select('#tree-container').append('svg').attr('width',width).attr('height', height).attr('xmlns', "http://www.w3.org/2000/svg");
+    const svg = d3.select('#tree-container').append('svg')
+    .attr('width',width)
+    .attr('height', height)
+    .attr('xmlns', "http://www.w3.org/2000/svg");
     
     const g= svg.append('g');
 
@@ -134,7 +139,11 @@
             //Преобразование в иерархию D3
             const root =d3.hierarchy(data);
 
-            const treeLayout = d3.tree().size([height-100, width-200]);
+            const treeLayout = d3.tree()
+            .size([height*2, width*0.9])
+            .separation((a,b)=>{
+                return (a.parent == b.parent ? 4.5 : 2);
+            });
             treeLayout(root);
 
             //Рисуем связи Link
@@ -143,12 +152,12 @@
                 .enter()
                 .append('path')
                 .attr('class','link')
-                .attr("d", d3.linkHorizontal()
-                            .x(d=>d.y+50)
-                            .y(d=>d.x+50))
+                .attr("d", d3.linkVertical()
+                            .x(d=>d.x+50)
+                            .y(d=>d.y+100))
                 .style('fill', 'none')
                 .style('stroke', '#ccc')
-                .style('stroke-width','2px');
+                .style('stroke-width','4px');
             // Рисуем узлы
 
             const nodes = g.selectAll('.node')
@@ -156,21 +165,21 @@
                 .enter()
                 .append('g')
                 .attr('class', 'node')
-                .attr('transform', d=>`translate(${d.y+50},${d.x+50})`)
+                .attr('transform', d=>`translate(${d.x+50},${d.y+100})`)
                 .on('click', function(event, d){
                     showNodeInfo(d.data);
                 });
 
             //Круги
             nodes.append("circle")
-                    .attr('r', 8)
+                    .attr('r', 20)
                     .style("fill", '#69b3a2')
                     .style('stroke', '#fff')
                     .style('stroke-width', '2px');
             //Текс
             nodes.append('text')
                     .attr('dy',4)
-                    .attr("x", d=> d.children? -15: 15)
+                    .attr("x", d=> d.children? -45: 45)
                     .style("text-anchor", d=> d.children? "end":"start")
                     .text(d=>d.data.name);
             console.log("Дерево успешно отрисовано");
@@ -201,6 +210,8 @@
         }
         infoDiv.innerHTML = html;
     }
+
+},10)
 
 
 </script>

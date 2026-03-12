@@ -19,7 +19,9 @@ class SubSystem(models.Model):
             'id': self.id,
             'name': self.name,
             'description': self.description or '',
-            'children': [child.to_dict() for child in self.children.all()]
+            'parameters': [p.to_dict() for p in self.parameters.all()],
+            'children': [child.to_dict() for child in self.children.all()],
+            
         }
 
 
@@ -43,7 +45,14 @@ class Parameters(models.Model):
                                         related_name='influence_on_me')
     def __str__(self):
         return f"Параметер: {self.name}; Подсистема: {self.subsystem}; Номер: {self.number};"
-    
+    def to_dict(self):
+        return {
+            'id':self.id,
+            'name':self.name,
+            'description': self.description or '',
+            'measure': self.measure,
+            'number': self.number,
+        }
     class Meta:
         unique_together=('subsystem', 'number')
     

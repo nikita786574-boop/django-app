@@ -92,4 +92,18 @@ urlpatterns = [
          view = views.show_d3_tree,
          name = 'show_d3_tree',
      ),
+
+     # Показываю дерево параметров
+
+     path(
+         route = 'api/parameters_tree/<str:name_system>',
+         view = views.api_parameters_tree,
+         name = 'api_parameters_tree',
+     ),
+
+     path(
+         route = 'parameters_d3/<str:name_system>',
+         view = views.show_parameters_tree,
+         name = 'show_parameters_tree',
+     ),
 ]
