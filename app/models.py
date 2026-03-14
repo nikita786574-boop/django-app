@@ -38,7 +38,7 @@ class Parameters(models.Model):
 
     measure = models.CharField(max_length=15)
 
-
+    is_goal = models.BooleanField(default=False)
     influence_on_other = models.ManyToManyField('self',
                                         through = 'ParameterRelations',
                                         symmetrical=False,
@@ -52,6 +52,8 @@ class Parameters(models.Model):
             'description': self.description or '',
             'measure': self.measure,
             'number': self.number,
+            'is_goal': self.is_goal,
+            'is_affect': False,
         }
     class Meta:
         unique_together=('subsystem', 'number')

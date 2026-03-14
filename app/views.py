@@ -267,10 +267,10 @@ def parameters_tree_goal(request, system):
     # Надо отобразить все целевые параметры, которые есть у системы
     system=SubSystem.objects.get(name=system)
     parameters = system.parameters.all()
-    parameters_goal = []
-    for parameter in parameters:
-        if len(ParameterRelations.objects.filter(to_parameter__name=parameter.name)):
-            parameters_goal.append(parameter)
+    parameters_goal = [parameter for parameter in parameters if parameter.is_goal]
+    #for parameter in parameters:
+    #    if len(ParameterRelations.objects.filter(to_parameter__name=parameter.name)):
+    #        parameters_goal.append(parameter)
     return render(request, 
                   template_name='app/subsystem/parameter_goal.html', 
                   context={
@@ -385,3 +385,43 @@ def show_parameters_tree(request, name_system):
     system = get_object_or_404(SubSystem, name=name_system)
     return render(request, 'app/d3/parameters_tree.html', {'node':system})
 
+def api_goal_parameters_tree(request, name_parameter, name_system, number):
+    parameter = get_object_or_404(Parameters, number=number, subsystem__name = name_system)
+    system = get_object_or_404(SubSystem, name = name_system)
+    if parameter.is_goal == False:
+        return Http404()
+    else:
+        #Добавить данные, чтобы как можно меньше логики передавать на фронтенд
+        data = system.to_dict()
+        affects = ParameterRelations.objects.filter(to_parameter = parameter)
+        for relation in affects:
+            if relation.is_affect == True:
+                name = relation.from_parameter.name
+                number = relation.from_parameter.number
+                id = relation.from_parameter.id
+                if rec_change_parameter(data, id):
+                    print('success')
+                else:
+                    raise ValueError('Пиздец, нихуя не работает')
+        # Данные добавлены
+        return JsonResponse(data)
+    #Теперь написать новый фронтенд и модель
+
+def goal_parameters_tree(request, name_parameter, name_system, number):
+    system = get_object_or_404(SubSystem, name=name_system)
+    parameter = get_object_or_404(Parameters, name=name_parameter, number=number)
+    return render(request, 'app/d3/goal_parameters_tree.html', {'node':system,'goal_parameter':parameter})
+
+def rec_change_parameter(data, id):
+    #Проверяю параметры data, потом рекурсивно по детям проверяю
+    for param in data.get('parameters', []):
+        print(param)
+        print(param['id'], id)
+        if param['id']==id:
+            param['is_affect']=True
+            return 1
+    for child in data.get('children', []):
+        if rec_change_parameter(child, id)==1:
+            return 1
+    return 0
+    

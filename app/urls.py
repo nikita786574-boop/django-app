@@ -106,4 +106,16 @@ urlpatterns = [
          view = views.show_parameters_tree,
          name = 'show_parameters_tree',
      ),
+
+     path(
+         route = 'api/goal/parameters/tree/<str:name_parameter>/<str:name_system>/<int:number>',
+         view = views.api_goal_parameters_tree,
+         name = 'api_goal_parameters_tree',
+     ),
+     path(
+         route = 'goal/parameters/tree/<str:name_parameter>/<str:name_system>/<int:number>',
+         view = views.goal_parameters_tree,
+         name = 'goal_parameters_tree',
+     ),
+     
 ]

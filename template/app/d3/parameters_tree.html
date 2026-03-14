@@ -2,6 +2,15 @@
 
 {% block title%}Дерево параметров {%endblock%}
 
+{%load blog_tags %}
+
+
+{%if sidebar%}
+    {%block sidebar%}
+        {%buttons_sidebar node.name%}
+    {%endblock%}
+{%endif%}
+
 {%block stylein%}
 <style>
     #tree-container{
