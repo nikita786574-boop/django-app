@@ -1,0 +1,313 @@
+{% extends "base.html" %}
+
+{% block title %}Дерево параметров (все параметры){% endblock %}
+
+{% load blog_tags %}
+
+{% if sidebar %}
+    {% block sidebar %}
+        {% buttons_sidebar node.name %}
+    {% endblock %}
+{% endif %}
+
+{% block stylein %}
+<style>
+    #tree-container {
+        width: 100%;
+        height: 500px;
+        border: 1px solid #ccc;
+        background: #f9f9f9;
+        overflow: hidden;
+    }
+
+
+
+    .parameter-circle {
+        stroke: #fff;
+        stroke-width: 2px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .parameter-circle.goal {
+        fill: #ff6b6b;
+    }
+
+    .parameter-circle.affected {
+        fill: #69b3a2;
+    }
+
+    .parameter-circle.hidden {
+        opacity: 0.1;
+    }
+
+    .parameter-label {
+        font-size: 10px;
+        font-family: sans-serif;
+        pointer-events: none;
+        text-anchor: middle;
+        fill: #333;
+    }
+
+    #controls {
+        margin-bottom: 10px;
+    }
+
+    .slider-container {
+        margin: 10px 0;
+    }
+
+    .slider-container label {
+        display: inline-block;
+        width: 200px;
+    }
+
+    #node-info {
+        margin-top: 10px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        background: white;
+        min-height: 50px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h2>Все параметры системы: {{ node.name }}</h2>
+
+<div id="controls" class="mb-3">
+    <div class="row">
+        <div class="col-md-4">
+            <label for="goal-select" class="form-label">Выберите целевой параметр:</label>
+            <select id="goal-select" class="form-select">
+                <option value="">-- нет --</option>
+                {% for goal in goal_parameters %}
+                <option value="{{ goal.id }}">{{ goal.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <button id="toggle-btn" class="btn btn-secondary mt-4">ON/OFF</button>
+            <span id="toggle-status" class="ms-2">Скрыть незатронутые параметры</span>
+        </div>
+    </div>
+    
+    <div class="slider-container">
+        <label for="subsystem-distance">Расстояние между подсистемами:</label>
+        <input type="range" id="subsystem-distance" min="50" max="300" value="150">
+        <span id="subsystem-distance-value">150</span>
+    </div>
+    <div class="slider-container">
+        <label for="parameter-distance">Расстояние между группами параметров:</label>
+        <input type="range" id="parameter-distance" min="20" max="100" value="30">
+        <span id="parameter-distance-value">30</span>
+    </div>
+</div>
+
+<div id="tree-container"></div>
+
+<div id="node-info">
+    <strong>Информация об узле:</strong>
+    <p id="info-text">Выберите параметр из списка или кликните на кружок</p>
+</div>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+    setTimeout(() => {
+        const container = document.getElementById('tree-container');
+        const width = container.clientWidth;
+        const height = container.clientHeight || 500;
+
+        const svg = d3.select('#tree-container').append('svg')
+            .attr('width', width)
+            .attr('height', height)
+            .attr('xmlns', "http://www.w3.org/2000/svg");
+
+        const g = svg.append('g');
+
+        // Zoom и Pan
+        const zoom = d3.zoom()
+            .scaleExtent([0.1, 4])
+            .on('zoom', (event) => {
+                g.attr('transform', event.transform);
+            });
+        svg.call(zoom);
+
+        // Загрузка данных через API
+        const apiUrl = "{% url 'api_parameters_tree' node.name %}";
+        fetch(apiUrl)
+            .then(response => {
+                if (!response.ok) throw new Error("Ошибка загрузки данных " + response.status);
+                return response.json();
+            })
+            .then(data => {
+                // Преобразование в иерархию D3
+                const root = d3.hierarchy(data);
+
+                // Слайдеры
+                const subsystemDistanceSlider = document.getElementById('subsystem-distance');
+                const parameterDistanceSlider = document.getElementById('parameter-distance');
+                const subsystemDistanceValue = document.getElementById('subsystem-distance-value');
+                const parameterDistanceValue = document.getElementById('parameter-distance-value');
+
+                // Функция перерисовки дерева
+                function redrawTree() {
+                    g.selectAll('*').remove();
+
+                    const subsystemDistance = parseInt(subsystemDistanceSlider.value);
+                    const parameterDistance = parseInt(parameterDistanceSlider.value);
+
+                    const treeLayout = d3.tree()
+                        .size([height * 2, width * 0.9])
+                        .separation((a, b) => {
+                            // Базовое расстояние между узлами
+                            return a.parent == b.parent ? 1 : 2;
+                        });
+                    treeLayout(root);
+                    // Масштабируем вертикальные координаты в зависимости от subsystemDistance
+                    root.each(d => {
+                        d.y = d.y * (subsystemDistance / 150);
+                    });
+
+                    // Рисуем только параметры каждого узла как маленькие кружочки
+                    root.descendants().forEach(d => {
+                        const parameters = d.data.parameters || [];
+                        if (parameters.length > 0) {
+                            // Располагаем параметры горизонтально справа от позиции узла подсистемы
+                            const startX = d.x + 50; // начальная позиция по X (с учетом смещения)
+                            const startY = d.y + 100; // позиция по Y
+                            const spacing = parameterDistance; // расстояние между параметрами
+                            
+                            parameters.forEach((param, idx) => {
+                                const paramX = startX + idx * spacing;
+                                const paramY = startY;
+                                
+                                const circle = g.append('circle')
+                                    .attr('class', 'parameter-circle')
+                                    .attr('cx', paramX)
+                                    .attr('cy', paramY)
+                                    .attr('r', 8)
+                                    .attr('data-id', param.id)
+                                    .attr('data-name', param.name)
+                                    .attr('data-description', param.description || '')
+                                    .attr('data-measure', param.measure)
+                                    .attr('data-number', param.number)
+                                    .attr('data-is-goal', param.is_goal)
+                                    .attr('data-subsystem', d.data.name)
+                                    .on('click', function(event) {
+                                        showParameterInfo(this);
+                                    });
+                                
+                                // Подпись параметра (необязательно)
+                                g.append('text')
+                                    .attr('class', 'parameter-label')
+                                    .attr('x', paramX)
+                                    .attr('y', paramY + 20)
+                                    .text(param.name)
+                                    .style('font-size', '8px');
+                            });
+                        }
+                    });
+
+                    console.log("Дерево параметров успешно отрисовано");
+                    // Применяем текущие стили фильтрации
+                    updateAffected(document.getElementById('goal-select').value);
+                }
+
+                // Данные для управления
+                let currentGoalId = null;
+                let affectedIds = new Set();
+                let filterActive = false;
+
+                // Функция для отображения информации о параметре
+                function showParameterInfo(circleElement) {
+                    const name = circleElement.attr('data-name');
+                    const description = circleElement.attr('data-description');
+                    const measure = circleElement.attr('data-measure');
+                    const number = circleElement.attr('data-number');
+                    const isGoal = circleElement.attr('data-is-goal') === 'true';
+                    const subsystem = circleElement.attr('data-subsystem');
+
+                    const infoDiv = document.getElementById('info-text');
+                    infoDiv.innerHTML = `
+                        <h5>${name}</h5>
+                        <p><strong>Подсистема:</strong> ${subsystem}</p>
+                        <p><strong>Описание:</strong> ${description || 'нет'}</p>
+                        <p><strong>Единица измерения:</strong> ${measure}</p>
+                        <p><strong>Номер:</strong> ${number}</p>
+                        <p><strong>Целевой параметр:</strong> ${isGoal ? 'Да' : 'Нет'}</p>
+                    `;
+
+                    // Обновляем выпадающий список
+                    if (isGoal) {
+                        document.getElementById('goal-select').value = circleElement.attr('data-id');
+                        updateAffected(circleElement.attr('data-id'));
+                    }
+                }
+
+
+
+                // Обработчик выпадающего списка целевых параметров
+                document.getElementById('goal-select').addEventListener('change', function() {
+                    const goalId = this.value;
+                    updateAffected(goalId);
+                });
+
+                function updateAffected(goalId) {
+                    currentGoalId = goalId ? parseInt(goalId) : null;
+                    affectedIds.clear();
+                    if (currentGoalId) {
+                        // Получаем затронутые параметры для этого целевого параметра
+                        const goalData = {{ goal_parameters_json|safe }};
+                        const goalInfo = goalData.find(g => g.id === currentGoalId);
+                        if (goalInfo) {
+                            goalInfo.affected_ids.forEach(id => affectedIds.add(id));
+                        }
+                    }
+                    // Применяем стили к параметрам
+                    g.selectAll('.parameter-circle').each(function() {
+                        const circle = d3.select(this);
+                        const paramId = parseInt(circle.attr('data-id'));
+                        const isGoal = circle.attr('data-is-goal') === 'true';
+                        
+                        circle.classed('goal', isGoal);
+                        circle.classed('affected', affectedIds.has(paramId));
+                        // Скрываем только если фильтр активен, выбран целевой параметр, и данный параметр не затронут и не является целевым
+                        circle.classed('hidden', filterActive && currentGoalId && !affectedIds.has(paramId) && paramId !== currentGoalId);
+                    });
+                }
+
+                // Обработчик кнопки ON/OFF
+                document.getElementById('toggle-btn').addEventListener('click', function() {
+                    filterActive = !filterActive;
+                    document.getElementById('toggle-status').textContent = 
+                        filterActive ? 'Показать все параметры' : 'Скрыть незатронутые параметры';
+                    updateAffected(document.getElementById('goal-select').value);
+                });
+
+                // Обработчики слайдеров
+                subsystemDistanceSlider.addEventListener('input', function() {
+                    subsystemDistanceValue.textContent = this.value;
+                    redrawTree();
+                });
+                parameterDistanceSlider.addEventListener('input', function() {
+                    parameterDistanceValue.textContent = this.value;
+                    redrawTree();
+                });
+
+                // Первоначальная отрисовка
+                redrawTree();
+
+                // Обновляем затронутые при загрузке
+                const initialGoal = document.getElementById('goal-select').value;
+                if (initialGoal) {
+                    updateAffected(initialGoal);
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка', error);
+                document.getElementById('info-text').textContent = "Ошибка загрузки дерева " + error.message;
+            });
+    }, 10);
+</script>
+{% endblock %}

@@ -1,9 +1,6 @@
 {%extends 'base.html'%}
 
-{%block title%}
-{%endblock%}
-
-
+{%block title%}Процессы{%endblock%}
 
 {%block sidebar%}
 <div class='button-sidebar'>
@@ -12,12 +9,22 @@
 {%endblock%}
 
 {%block content%}
-{% if pairs %}
+{% if pairs_with_progress %}
     <div class="grid">
-        {%for min_parameter, goal_parameter in pairs%}
+        {%for pair in pairs_with_progress%}
             <div class="card">
-                <a href="/form_goal_parameter/{{goal_parameter.name}}/{{min_parameter.name}}"><button>{{goal_parameter.name}}</button></a>
-                <div class="description">{{min_parameter.name}}</div>
+                <a href="/form_goal_parameter/{{pair.goal_parameter.name}}/{{pair.min_parameter.name}}"><button>{{pair.goal_parameter.name}}</button></a>
+                <div class="description">{{pair.min_parameter.name}}</div>
+                <div class="mt-2">
+                    <div class="progress">
+                        <div class="progress-bar" role="progressbar" style="width: {{ pair.percent }}%;" 
+                             aria-valuenow="{{ pair.percent }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                            {{ pair.percent }}%
+                        </div>
+                    </div>
+                </div>
             </div>
             
         {%endfor%}

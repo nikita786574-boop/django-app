@@ -61,6 +61,14 @@
         cursor: pointer;
     }
 
+    .dropdown-menu {
+        min-width: 200px;
+    }
+
+    .dropdown-item {
+        cursor: pointer;
+    }
+
     svg{
         color: #DED745;
         background-color: #DED745;
@@ -191,6 +199,22 @@
                     .attr("x", d=> d.children? -45: 45)
                     .style("text-anchor", d=> d.children? "end":"start")
                     .text(d=>d.data.name);
+            
+            // Треугольник для выпадающего меню параметров
+            nodes.append('text')
+                    .attr('class', 'dropdown-triangle')
+                    .attr('dy', 15)
+                    .attr('x', d => d.children ? -55 : 55) // справа от текста
+                    .style('text-anchor', d => d.children ? 'end' : 'start')
+                    .style('cursor', 'pointer')
+                    .style('font-size', '14px')
+                    .style('fill', '#333')
+                    .text('▼')
+                    .on('click', function(event, d) {
+                        event.stopPropagation(); // чтобы не сработал клик по узлу
+                        showDropdownForNode(d, this);
+                    });
+            
             console.log("Дерево успешно отрисовано");
 
         })
@@ -207,6 +231,13 @@
             html += `<em>${data.description}</em><br>`;
         }
 
+        if(data.parameters && data.parameters.length > 0){
+            html += `<br><strong>Параметры (${data.parameters.length}):</strong><br>`;
+            data.parameters.forEach(param => {
+                html += `- ${param.name} (${param.measure})<br>`;
+            });
+        }
+
         if(data.children && data.children.length>0){
            
             html+=`<br><strong>Дочерние элементы (${data.children.length})</strong><br>`;
@@ -218,6 +249,75 @@
             html+='<br>Нет дочерних элементов';
         }
         infoDiv.innerHTML = html;
+        
+
+
+    }
+
+    // Функция для показа выпадающего меню рядом с узлом
+    function showDropdownForNode(nodeData, triangleElement) {
+        // Удаляем предыдущее dropdown, если есть
+        const existingDropdown = document.getElementById('node-dropdown');
+        if (existingDropdown) existingDropdown.remove();
+        
+        // Получаем координаты треугольника
+        const svgRect = triangleElement.getBoundingClientRect();
+        
+        // Создаем контейнер для dropdown
+        const dropdownContainer = document.createElement('div');
+        dropdownContainer.id = 'node-dropdown';
+        dropdownContainer.style.position = 'absolute';
+        dropdownContainer.style.left = (svgRect.left + window.scrollX) + 'px';
+        dropdownContainer.style.top = (svgRect.bottom + window.scrollY) + 'px';
+        dropdownContainer.style.zIndex = 1000;
+        
+        // Формируем HTML для dropdown
+        let html = `<div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="nodeDropdownButton" data-bs-toggle="dropdown" aria-expanded="false">
+                Параметры (${nodeData.data.parameters ? nodeData.data.parameters.length : 0})
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="nodeDropdownButton">`;
+        
+        if (nodeData.data.parameters && nodeData.data.parameters.length > 0) {
+            nodeData.data.parameters.forEach(param => {
+                html += `<li><a class="dropdown-item" 
+                    data-param-id="${param.id}" 
+                    data-param-name="${param.name}" 
+                    data-param-description="${param.description || ''}" 
+                    data-param-measure="${param.measure}" 
+                    data-param-number="${param.number}" 
+                    data-param-is-goal="${param.is_goal}"
+                >${param.name}</a></li>`;
+            });
+        } else {
+            html += '<li><a class="dropdown-item disabled">Нет параметров</a></li>';
+        }
+        
+        html += `</ul></div>`;
+        dropdownContainer.innerHTML = html;
+        
+        // Добавляем в body
+        document.body.appendChild(dropdownContainer);
+        
+        // Инициализируем Bootstrap dropdown
+        const dropdownButton = document.getElementById('nodeDropdownButton');
+        const dropdown = new bootstrap.Dropdown(dropdownButton);
+        dropdown.show();
+        
+        // Добавляем обработчики для элементов dropdown
+        dropdownContainer.querySelectorAll('.dropdown-item').forEach(item => {
+            item.addEventListener('click', function() {
+                // Можно добавить действие при выборе параметра
+                console.log('Выбран параметр:', this.dataset.paramName);
+                // Закрываем dropdown
+                dropdown.hide();
+            });
+        });
+        
+        // Удаляем dropdown при закрытии
+        dropdownButton.addEventListener('hidden.bs.dropdown', function () {
+            dropdownContainer.remove();
+        });
     }
 
 },10)

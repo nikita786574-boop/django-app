@@ -1,74 +1,122 @@
 {% extends "base.html" %}
 {%load static%}
 {% block title %}
-Goal parameter
+Определение влияния параметра
 {% endblock %}
 
 {% block stylein %}
 .flex-container-one{
-    display: ;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 2rem 0;
 }
 .flex-container-two{
     display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2rem;
 }
 .flex-item {
-    text-align:left;
+    text-align:center;
     font-size: 1.1em;
     padding: 1.5em;
     color: white;
+    border-radius: 10px;
 }
 .item1{
     background-color: #2b6cb0;
-    border: 5px solid red;
+    border: 5px solid #1e40af;
     margin: 10px;
+    min-width: 200px;
 }
 .item2{
     background-color: #F5059A;
-    border: 5px solid black;
+    border: 5px solid #db2777;
     margin: 10px;
+    min-width: 300px;
 }
 
 .arrow-image{
-    width:100%;
+    width: 100%;
     height: 50%;
+    transform: rotate(180deg);
 }
 .item-image{
-    border: 5px solid black;
+    border: 5px solid #000;
     margin: 10px;
-    width: 5%; 
-    background-color: red;
+    width: 50px; 
+    background-color: #fbbf24;
+    border-radius: 5px;
 }
 {%endblock%}
 
 {% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title">Определение влияния параметра</h3>
+                </div>
+                <div class="card-body">
+                    <div class="flex-container-one">
+                        <div class="flex-container-two">
+                            <div class="flex-item item1">
+                                <h5>Исходный параметр</h5>
+                                <p><strong>Подсистема:</strong> {{source.subsystem}}</p>
+                                <p><strong>Параметр:</strong> {{source.name}}</p>
+                            </div>
+                            <div class="flex-item item-image">
+                                <img class='arrow-image' src="{%static 'arrow-right-svgrepo-com.svg' %}" alt="arrow">
+                            </div>
+                            <div class="flex-item item1">
+                                <h5>Целевой параметр</h5>
+                                <p><strong>Подсистема:</strong> {{goal.subsystem}}</p>
+                                <p><strong>Параметр:</strong> {{goal.name}}</p>
+                            </div>
+                        </div>
 
-<div class="flex-container-one">
-    <div class="flex-container-two">
-        <div class="flex-item item1">
-            <p><b>Подсистема</b>: {{source.subsystem}}</p>
-            <p><b>Параметр</b>: {{source.name}}</p>
-        </div>
-        <div class="flex-item item-image">
-            <img class='arrow-image' src="{%static 'arrow-right-svgrepo-com.svg' %}"/>
-        </div>
-        <div class = 'flex-item item1'>
-            <p><b>Подсистема</b>: {{goal.subsystem}}</p>
-            <p><b>Параметр</b>: {{goal.name}}</p>
-        </div>
-    </div>
-
-    <div class="flex-item item2">
-        <form method="post">
-            {% csrf_token %}
-
-            {{ form.non_field_errors }}
-            {{forms.is_affect.errors}}
-            <div>
-                {{ form.is_affect }}
+                        <div class="flex-item item2">
+                            <h5>Определите влияние</h5>
+                            <form method="post" class="needs-validation" novalidate>
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    {{ form.non_field_errors }}
+                                    <div class="form-check form-check-inline">
+                                        {{ form.is_affect }}
+                                    </div>
+                                    {% for error in form.is_affect.errors %}
+                                        <div class="invalid-feedback d-block">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-light btn-lg">Сохранить</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
-
-            <button type="submit">Сохранить</button>
-        </form>
+        </div>
     </div>
 </div>
+
+<script>
+// Bootstrap form validation
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms)
+        .forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+})()
+</script>
 {% endblock %}

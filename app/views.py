@@ -9,6 +9,7 @@ from django.urls import reverse
 from app.forms import ParameterRelationsFormSecond
 
 from django.http import JsonResponse
+import json
 
 
 
@@ -195,7 +196,7 @@ def show_processes(request):
             if data.to_parameter not in to_rel:
                 to_rel.append(data.to_parameter)
         #минимальная подсистема и минимальный номер параметра
-        result=[]
+        pairs_with_progress = []
         for goal_parameter in to_rel:
             parameters = []
             for data in part_process:
@@ -212,9 +213,20 @@ def show_processes(request):
                     if min_param_num>param.number:
                         min_param_num = param.number
                         min_param=param
-            result.append((min_param, goal_parameter))
+            # Рассчитываем прогресс для этого целевого параметра
+            total = ParameterRelations.objects.filter(to_parameter=goal_parameter).count()
+            processed = ParameterRelations.objects.filter(to_parameter=goal_parameter, is_affect__isnull=False).count()
+            if total > 0:
+                percent = int(processed * 100 / total)
+            else:
+                percent = 0
+            pairs_with_progress.append({
+                'min_parameter': min_param,
+                'goal_parameter': goal_parameter,
+                'percent': percent
+            })
         
-        return render(request, template_name='app/processes.html', context={'pairs':result})
+        return render(request, template_name='app/processes.html', context={'pairs_with_progress': pairs_with_progress})
 
 
 def form_goal_parameter(request, name_goal_parameter, name_min_parameter):
@@ -381,9 +393,29 @@ def api_parameters_tree(request, name_system):
     system = get_object_or_404(SubSystem, name = name_system)
     return JsonResponse(system.to_dict())
 
-def show_parameters_tree(request, name_system):
+def all_parameters_tree(request, name_system):
     system = get_object_or_404(SubSystem, name=name_system)
-    return render(request, 'app/d3/parameters_tree.html', {'node':system})
+    # Для каждого целевого параметра вычисляем затронутые параметры
+    all_params = get_all_parameters_recursive(system)
+    goal_parameters = []
+    for param in all_params:
+        if param.is_goal:
+            affected = ParameterRelations.objects.filter(
+                to_parameter=param,
+                is_affect=True
+            ).values_list('from_parameter_id', flat=True)
+            goal_parameters.append({
+                'id': param.id,
+                'name': param.name,
+                'affected_ids': list(affected)
+            })
+    # Также нужно собрать все параметры (включая потомков) для фронтенда
+    # Данные будут загружены через api_parameters_tree, но можно передать goal_parameters
+    return render(request, 'app/d3/all_parameters_tree.html', {
+        'node': system,
+        'goal_parameters': goal_parameters,
+        'goal_parameters_json': mark_safe(json.dumps(goal_parameters))
+    })
 
 def api_goal_parameters_tree(request, name_parameter, name_system, number):
     parameter = get_object_or_404(Parameters, number=number, subsystem__name = name_system)
@@ -424,4 +456,11 @@ def rec_change_parameter(data, id):
         if rec_change_parameter(child, id)==1:
             return 1
     return 0
+
+def get_all_parameters_recursive(subsystem):
+    """Рекурсивно собирает все параметры системы и ее потомков"""
+    params = list(subsystem.parameters.all())
+    for child in subsystem.children.all():
+        params.extend(get_all_parameters_recursive(child))
+    return params
     

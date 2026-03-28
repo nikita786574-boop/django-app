@@ -103,7 +103,7 @@ urlpatterns = [
 
      path(
          route = 'parameters_d3/<str:name_system>',
-         view = views.show_parameters_tree,
+         view = views.all_parameters_tree,
          name = 'show_parameters_tree',
      ),
 
