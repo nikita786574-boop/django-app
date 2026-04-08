@@ -18,8 +18,8 @@ buttons_list = [
     {'title': 'Форма для subsystem',                     'name_url': 'subsystem_form',          'additional_parameter':None},
     {'title': 'Форма для parameter',                     'name_url': 'parameters_form',         'additional_parameter':None},
    # {'title': 'Форма для parameter relations',           'name_url': 'parameter_relations_form','additional_parameter':None},
-    {'title': 'Форма для начала процесса',               'name_url': 'goal_parameter',          'additional_parameter':None},
-    {'title': 'Форма для отображения начатых процессов', 'name_url': 'show_processes',          'additional_parameter':None},
+    {'title': 'Форма для определения важных параметров',               'name_url': 'goal_parameter',          'additional_parameter':None},
+    {'title': 'Форма для отображения начатых и законченных процессов', 'name_url': 'show_processes',          'additional_parameter':None},
 ]
 
 
@@ -181,7 +181,7 @@ def del_object(request,name_system=None, name_parameter=None, name_to_parameter=
 
 
 def show_processes(request):
-    #Сдесь же создание процесса
+    #Здесь же создание процесса
     #Выводить начатые процессы
     if request.method=='GET':
         #Надо найти незаконченные процессы
@@ -189,7 +189,8 @@ def show_processes(request):
         #Пока что при нажатии на процесс можно просто выкидывать следующую форму
         # Когда пользователь её заполняет, его будет перекидывать на страницу с
         # процессами. 
-        part_process = ParameterRelations.objects.filter(is_affect__isnull=True)
+        #part_process = ParameterRelations.objects.filter(is_affect__isnull=True)
+        part_process = ParameterRelations.objects.all()
         #Я буду выводить кнопку для следующего этапа в процессе.
         to_rel =list()
         for data in part_process:
@@ -225,8 +226,10 @@ def show_processes(request):
                 'goal_parameter': goal_parameter,
                 'percent': percent
             })
+        active_processes = [p for p in pairs_with_progress if p['percent'] < 100]
+        completed_processes = [p for p in pairs_with_progress if p['percent'] == 100]
         
-        return render(request, template_name='app/processes.html', context={'pairs_with_progress': pairs_with_progress})
+        return render(request, template_name='app/processes.html', context={'active_processes': active_processes, 'completed_processes': completed_processes})
 
 
 def form_goal_parameter(request, name_goal_parameter, name_min_parameter):

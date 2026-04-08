@@ -1,19 +1,23 @@
 from django.db import models
+from django.core.exceptions import ValidationError
 
 class SubSystem(models.Model):
-    name = models.CharField(max_length=200)
-    description = models.TextField(blank = True, null=True)
+    name = models.CharField(max_length=200, help_text="Название подсистемы")
+    description = models.TextField(blank = True, null=True, help_text="Описание назначения подсистемы")
     parent = models.ForeignKey('self',
                               on_delete = models.PROTECT,
                               blank = True,
                               null=True,
-                              related_name = 'children'
+                              related_name = 'children',
+                              help_text="Родительская подсистема (если есть)"
                               )
-    is_root = models.BooleanField(blank=False, default = True)
-    number = models.IntegerField()
+    is_root = models.BooleanField(blank=False, default = True, help_text="Является ли корневой подсистемой")
+    number = models.IntegerField(help_text="Порядковый номер подсистемы")
     def __str__(self):
         return self.name
-    
+    def clean(self):
+        if not (self.is_root is None) and not(self.parent is None):
+            raise ValidationError({"is_root": "Корневая подсистема не может иметь родителя"})
     def to_dict(self):
         return {
             'id': self.id,
@@ -26,17 +30,18 @@ class SubSystem(models.Model):
 
 
 class Parameters(models.Model):
-    name = models.CharField(max_length = 20)
-    description = models.TextField(blank = True, null=True)
+    name = models.CharField(max_length = 20, help_text="Название параметра")
+    description = models.TextField(blank = True, null=True, help_text="Описание параметра")
     subsystem = models.ForeignKey(SubSystem,
                                   on_delete=models.CASCADE,
                                   blank=True,
                                   null=True,
-                                  related_name='parameters')
-    number = models.IntegerField()
-
-
-    measure = models.CharField(max_length=15)
+                                  related_name='parameters',
+                                  help_text="Подсистема, к которой относится параметр")
+    number = models.IntegerField(help_text="Порядковый номер параметра")
+    
+    
+    measure = models.CharField(max_length=15, help_text="Единица измерения")
 
     is_goal = models.BooleanField(default=False)
     influence_on_other = models.ManyToManyField('self',

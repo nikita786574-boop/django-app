@@ -2,6 +2,20 @@
 
 {%block title%}Процессы{%endblock%}
 
+{% block stylein %}
+
+.card-completed {
+    background-color: #d4edde;
+    border: 2px solid #28a745;
+}
+
+.card-completed:hover {
+    transform: none;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.88);
+}
+    
+{% endblock %}
+
 {%block sidebar%}
 <div class='button-sidebar'>
 <a href='/'><button>Главная страница</button></a>
@@ -9,9 +23,9 @@
 {%endblock%}
 
 {%block content%}
-{% if pairs_with_progress %}
+{% if active_processes %}
     <div class="grid">
-        {%for pair in pairs_with_progress%}
+        {%for pair in active_processes%}
             <div class="card">
                 <a href="/form_goal_parameter/{{pair.goal_parameter.name}}/{{pair.min_parameter.name}}"><button>{{pair.goal_parameter.name}}</button></a>
                 <div class="description">{{pair.min_parameter.name}}</div>
@@ -27,6 +41,20 @@
                 </div>
             </div>
             
+        {%endfor%}
+    </div>
+{%endif%}
+    
+
+{%if completed_processes%}
+    <div class="grid">
+        {%for pair in completed_processes%}
+            <div class = "card card-completed">
+                <a href=""><button>{{pair.goal_parameter.name}}</button></a>
+                <div>
+                    COMPLETE
+                </div>
+            </div>
         {%endfor%}
     </div>
 {%endif%}

@@ -63,11 +63,12 @@
             
 
     .header{
-        background-color: #ccc;
-        height:40px;
-        border: 10px;
-        border-color:#F5059A;
-        background-color: #DE9F45;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
     }
 body {
     display: flex;
@@ -93,11 +94,6 @@ body {
         background-color: #DEC445;
     }
 
-    .header button{
-        height: 34px;
-
-    }
-
     .content-wrapper{
         display: flex;
         align-items: stretch;
@@ -115,18 +111,39 @@ body {
         width: 33%;
         background-color: #CCAACC;
     }
-
-    .button-div{
-        float:left;
-        height:34px;
-        background-color:#000000;
-        border-right: 3px solid green;
-        border-left: 3px solid green;
-        border-bottom: 3px solid green;
-        border-top: 3px solid green;
-        border-radius: 10px;
+    .button-div a{
+        text-decoration: none;
+    }
+    .button-div button{
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        background-color: #0d6efd;
+        color: #ffffff;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s ease, transform 0.1s ease;
+    }
+    .button-div button:hover {
+        background-color: #0b5ed7;
     }
 
+    .button-div button:active {
+        transform:scale(0.97);
+    }
+
+    .button-sidebar {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 8px;
+    }
+
+    .button-div {
+        display: inline-flex;
+    }
     .button-parameter{
         border: 2px solid red;
         background-color:transparent;
@@ -142,7 +159,7 @@ body {
             {%endblock%}
             <link href="{% static 'css/style.css'%}" rel="stylesheet" type="text/css"/>
         </head>
-        <body style="background-color:aquamarine">
+        <body>
             <header>
                 <div class="header">
                     {%buttons%}
