@@ -12,13 +12,17 @@
 
 {% block stylein %}
 <style>
+    html body{
+        overflow-x: hidden;
+    }
     #tree-container {
-        width: 60%;
-        height: 300px;
+        width: 100%;
+        height: 100vh;
         border: 1px solid #ccc;
         background: #f9f9f9;
         overflow: hidden;
-        margin: 10px auto;
+        padding: 10px;
+        box-sizing: border-box;
     }
 
 
@@ -80,7 +84,7 @@
     svg {
         color: #DED745;
         background-color: #FFFFFF;
-        margin: 10px;
+        box-sizing: border-box;
     }
 </style>
 {% endblock %}
@@ -136,7 +140,7 @@
     setTimeout(() => {
         const container = document.getElementById('tree-container');
         const width = container.clientWidth;
-        const height = container.clientHeight || 500;
+        const height = container.clientHeight || 300;
 
         const svg = d3.select('#tree-container').append('svg')
             .attr('width', width)
@@ -189,7 +193,7 @@
                     const parameterDistance = parseInt(parameterDistanceSlider.value);
 
                     const treeLayout = d3.tree()
-                        .size([height * 2, width * 0.9])
+                        .size([width * 0.8 , height])
                         .separation((a, b) => {
                             // Базовое расстояние между узлами
                             return a.parent == b.parent ? 1 : 2;
@@ -252,12 +256,13 @@
 
                 // Функция для отображения информации о параметре
                 function showParameterInfo(circleElement) {
-                    const name = circleElement.attr('data-name');
-                    const description = circleElement.attr('data-description');
-                    const measure = circleElement.attr('data-measure');
-                    const number = circleElement.attr('data-number');
-                    const isGoal = circleElement.attr('data-is-goal') === 'true';
-                    const subsystem = circleElement.attr('data-subsystem');
+                    const circle = d3.select(circleElement);
+                    const name = circleElement.getAttribute('data-name');
+                    const description = circleElement.getAttribute('data-description');
+                    const measure = circleElement.getAttribute('data-measure');
+                    const number = circleElement.getAttribute('data-number');
+                    const isGoal = circleElement.getAttribute('data-is-goal') === 'true';
+                    const subsystem = circleElement.getAttribute('data-subsystem');
 
                     const infoDiv = document.getElementById('info-text');
                     infoDiv.innerHTML = `
