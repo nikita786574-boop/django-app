@@ -16,7 +16,7 @@ class SubSystem(models.Model):
     def __str__(self):
         return self.name
     def clean(self):
-        if not (self.is_root is None) and not(self.parent is None):
+        if self.is_root is True and self.parent is not None:
             raise ValidationError({"is_root": "Корневая подсистема не может иметь родителя"})
     def to_dict(self):
         return {
@@ -30,7 +30,7 @@ class SubSystem(models.Model):
 
 
 class Parameters(models.Model):
-    name = models.CharField(max_length = 20, help_text="Название параметра")
+    name = models.CharField(max_length = 50, help_text="Название параметра")
     description = models.TextField(blank = True, null=True, help_text="Описание параметра")
     subsystem = models.ForeignKey(SubSystem,
                                   on_delete=models.CASCADE,

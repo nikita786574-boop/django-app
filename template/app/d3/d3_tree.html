@@ -79,6 +79,8 @@
     svg{
         color: #DED745;
         background-color: #ffffff;
+        width: 95%;
+        margin: 2.5%;
     }
 </style>
 
@@ -92,9 +94,9 @@
 <h2>Дерево подсистем: {{node.name}}</h2>
 
 <div id="controls">
-    <button onclick="resetZoom()">Сбросить зум</button>
-    <button onclick="zoomIn()">Увеличить</button>
-    <button onclick="zoomOut()">Уменьшить</button>
+    <button onclick="resetZoom()" class="btn btn-sm btn-outline-secondary">Сбросить зум</button>
+    <button onclick="zoomIn()" class="btn btn-sm btn-outline-secondary">Увеличить</button>
+    <button onclick="zoomOut()" class="btn btn-sm btn-outline-secondary">Уменьшить</button>
 </div>
 
 <div id="tree-container">
@@ -118,38 +120,38 @@
 
     // Создание SVG
 
-    const svg = d3.select('#tree-container').append('svg')
-    .attr('width',width)
-    .attr('height', height)
-    .attr('xmlns', "http://www.w3.org/2000/svg");
+        const svg = d3.select('#tree-container').append('svg')
+            //.attr('width',width)
+            .attr('height', height)
+            .attr('xmlns', "http://www.w3.org/2000/svg");
     
-    const g= svg.append('g');
+        const g= svg.append('g');
 
     // Zoom и Pan
 
-    const zoom = d3.zoom()
-    .scaleExtent([0.1, 4])
-    .on('zoom',(event) => {
-        g.attr('transform', event.transform)
-    });
+        const zoom = d3.zoom()
+        .scaleExtent([0.1, 4])
+        .on('zoom',(event) => {
+            g.attr('transform', event.transform)
+        });
 
-    svg.call(zoom);
+        svg.call(zoom);
 
-    //Управление зумом
+        //Управление зумом
 
-    function resetZoom(){
-        svg.transition().duration(750).call(zoom.transform, d3.zoomIdentity);
-    }
-    function zoomIn(){
-        svg.transition().duration(300).call(zoom.scaleBy, 1.3);
-    }
-    function zoomOut(){
-        svg.transition().duration(300).call(zoom.scaleBy, 0.7);
-    }
+        function resetZoom(){
+            svg.transition().duration(750).call(zoom.transform, d3.zoomIdentity);
+        }
+        function zoomIn(){
+            svg.transition().duration(300).call(zoom.scaleBy, 1.3);
+        }
+        function zoomOut(){
+            svg.transition().duration(300).call(zoom.scaleBy, 0.7);
+        }
 
-    // Загрузка данных
+        // Загрузка данных
 
-    const apiUrl = "{% url 'api_tree' node.name %}"
+        const apiUrl = "{% url 'api_tree' node.name %}"
 
     fetch(apiUrl)
         .then(response =>{
@@ -176,7 +178,7 @@
                 .append('path')
                 .attr('class','link')
                 .attr("d", d3.linkVertical()
-                            .x(d=>d.x+50)
+                            .x(d=>d.x+500)
                             .y(d=>d.y+100))
                 .style('fill', 'none')
                 .style('stroke', '#ccc')
@@ -188,7 +190,7 @@
                 .enter()
                 .append('g')
                 .attr('class', 'node')
-                .attr('transform', d=>`translate(${d.x+50},${d.y+100})`)
+                .attr('transform', d=>`translate(${d.x+500},${d.y+100})`)
                 .on('click', function(event, d){
                     showNodeInfo(d.data);
                 });
@@ -215,7 +217,7 @@
                 .attr("height", 40)
                 .html(d => {
                     const params = d.data.parameters;
-                    if (!params || params.length === 0) return "";
+                    if (!params) return "";
                     const paramBaseUrl = "{% url 'edit_parameter' 'PARAM_PLACEHOLDER' %}";
                     let items = "";
                     params.forEach(p => {

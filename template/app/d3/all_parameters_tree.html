@@ -12,36 +12,27 @@
 
 {% block stylein %}
 <style>
-    html body{
-        overflow-x: hidden;
-    }
     #tree-container {
-        width: 100%;
-        height: 100vh;
+        width: 60%;
+        height: 300px;
         border: 1px solid #ccc;
         background: #f9f9f9;
         overflow: hidden;
-        padding: 10px;
         box-sizing: border-box;
+        padding: 10px;
     }
-
-
-
     .parameter-circle {
         stroke: #fff;
         stroke-width: 2px;
         cursor: pointer;
         transition: all 0.3s;
     }
-
     .parameter-circle.goal {
         fill: #ff6b6b;
     }
-
     .parameter-circle.affected {
         fill: #69b3a2;
     }
-
     .parameter-circle.hidden {
         opacity: 0.1;
     }
@@ -73,6 +64,13 @@
         width: 200px;
     }
 
+    .relation-link {
+        fill: none;
+        stroke: #888;
+        stroke-width: 2px;
+        stroke-dasharray: 5,5;
+    }
+
     #node-info {
         margin-top: 10px;
         padding: 10px;
@@ -84,7 +82,8 @@
     svg {
         color: #DED745;
         background-color: #FFFFFF;
-        box-sizing: border-box;
+        width: 95%;
+        margin: 2.5%;
     }
 </style>
 {% endblock %}
@@ -92,7 +91,8 @@
 {% block content %}
 <h2>Все параметры системы: {{ node.name }}</h2>
 
-<div id="controls" class="mb-3">
+
+<div id="controls" class="mb-3" style="overflow: hidden;">
     <div class="row">
         <div class="col-md-4">
             <label for="goal-select" class="form-label">Выберите целевой параметр:</label>
@@ -128,6 +128,7 @@
     </div>
 </div>
 
+
 <div id="tree-container"></div>
 
 <div id="node-info">
@@ -143,7 +144,7 @@
         const height = container.clientHeight || 300;
 
         const svg = d3.select('#tree-container').append('svg')
-            .attr('width', width)
+            //.attr('width', width)
             .attr('height', height)
             .attr('xmlns', "http://www.w3.org/2000/svg");
 
@@ -170,6 +171,7 @@
 
         // Загрузка данных через API
         const apiUrl = "{% url 'api_parameters_tree' node.name %}";
+        let paramPositions = {};
         fetch(apiUrl)
             .then(response => {
                 if (!response.ok) throw new Error("Ошибка загрузки данных " + response.status);
@@ -191,19 +193,30 @@
 
                     const subsystemDistance = parseInt(subsystemDistanceSlider.value);
                     const parameterDistance = parseInt(parameterDistanceSlider.value);
+                   
 
                     const treeLayout = d3.tree()
-                        .size([width * 0.8 , height])
+                        .size([width, height * 2])
                         .separation((a, b) => {
                             // Базовое расстояние между узлами
                             return a.parent == b.parent ? 1 : 2;
                         });
                     treeLayout(root);
                     // Масштабируем вертикальные координаты в зависимости от subsystemDistance
+                    
                     root.each(d => {
-                        d.y = d.y * (subsystemDistance / 150);
+                        d.y = d.y * (subsystemDistance / 500);
                     });
 
+                    paramPositions = {};
+                    root.descendants().forEach(d => {
+                        const parameters = d.data.parameters || [];
+                        parameters.forEach((param, idx) => {
+                            const startX = d.x + 50 + idx * parameterDistance;
+                            const startY = d.y + 100;
+                            paramPositions[param.id] = { x: startX, y: startY };
+                        });
+                    });
                     // Рисуем только параметры каждого узла как маленькие кружочки
                     root.descendants().forEach(d => {
                         const parameters = d.data.parameters || [];
@@ -294,7 +307,8 @@
                     affectedIds.clear();
                     if (currentGoalId) {
                         // Получаем затронутые параметры для этого целевого параметра
-                        const goalData = {{ goal_parameters_json|safe }};
+                    
+                        const goalData = JSON.parse('{{ goal_parameters_json|escapejs }}');
                         const goalInfo = goalData.find(g => g.id === currentGoalId);
                         if (goalInfo) {
                             goalInfo.affected_ids.forEach(id => affectedIds.add(id));
@@ -310,6 +324,30 @@
                         circle.classed('affected', affectedIds.has(paramId));
                         // Скрываем только если фильтр активен, выбран целевой параметр, и данный параметр не затронут и не является целевым
                         circle.classed('hidden', filterActive && currentGoalId && !affectedIds.has(paramId) && paramId !== currentGoalId);
+                    });
+                    drawRelations();
+                }
+
+
+                function drawRelations() {
+                    g.selectAll('.relation-link').remove();
+                    if (!filterActive || !currentGoalId) return ;
+                    const goalPos = paramPositions[currentGoalId];
+                    if (!goalPos) return;
+
+                    affectedIds.forEach(affectedId => {
+                        const affectedPos = paramPositions[affectedId];
+                        if (!affectedPos) return;
+                        g.append('path')
+                            .attr('class', 'relation-link')
+                            .attr('d', d3.linkVertical()
+                                .x(d => d.x)
+                                .y(d => d.y)
+                                ({ source: goalPos, target: affectedPos}))
+                            .style('stroke', '#ff6b6b')
+                            .style('stroke-width', '2px')
+                            .style('fill', 'none')
+                            .style('opacity', 0.7)
                     });
                 }
 
