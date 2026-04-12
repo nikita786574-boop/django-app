@@ -207,10 +207,7 @@
                     root.each(d => {
                         d.y = d.y * (subsystemDistance / 500);
                     });
-                    const GROUP_GAP = 50;
-                     let cumulativeGroupeOffset = 0;
-                     paramPositions = {};
-                     
+                    paramPositions = {};
                      
                      root.descendants().forEach(d => {
                          const parameters = d.data.parameters || [];
@@ -220,10 +217,9 @@
                              const spacing = parameterDistance;
                              
                              parameters.forEach((param, idx) => {
-                                 const paramX = startX + idx * spacing + cumulativeGroupeOffset;
+                                 const paramX = startX + idx * spacing;
                                  const paramY = startY;
                                  
-                                 // Сохраняем позицию ДО отрисовки
                                  paramPositions[param.id] = { x: paramX, y: paramY };
                                  
                                  const circle = g.append('circle')
@@ -249,9 +245,6 @@
                                      .text(param.name)
                                      .style('font-size', '8px');
                              });
-                             
-                             const groupWidth = parameters.length * spacing;
-                             cumulativeGroupeOffset += groupWidth + GROUP_GAP;
                          }
                      });
 
