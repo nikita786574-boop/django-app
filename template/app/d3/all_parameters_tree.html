@@ -187,69 +187,120 @@
                 const subsystemDistanceValue = document.getElementById('subsystem-distance-value');
                 const parameterDistanceValue = document.getElementById('parameter-distance-value');
 
-                // Функция перерисовки дерева
+// Функция перерисовки дерева
                 function redrawTree() {
                     g.selectAll('*').remove();
 
                     const subsystemDistance = parseInt(subsystemDistanceSlider.value);
                     const parameterDistance = parseInt(parameterDistanceSlider.value);
-                   
 
+                    // 1. Вспомогательная функция для расчета ширины группы параметров
+                    const getNodeWidth = (node) => {
+                        const count = (node.data.parameters || []).length;
+                        // Ширина = (кол-во параметров * шаг) + небольшой запас
+                        // Если параметров 0, считаем ширину как 1 шаг (для самого узла)
+                        return Math.max(1, count) * parameterDistance; 
+                    };
+
+                    // 2. Настраиваем дерево с nodeSize и умным разделением (separation)
                     const treeLayout = d3.tree()
-                        .size([width, height * 2])
+                        .nodeSize([1, subsystemDistance]) // [dx, dy] - dx=1 пиксель, дальше управляет separation
                         .separation((a, b) => {
-                            // Базовое расстояние между узлами
-                            return a.parent == b.parent ? 1 : 2;
+                            // Вычисляем половину ширины левого и правого узла
+                            const widthA = getNodeWidth(a) / 2;
+                            const widthB = getNodeWidth(b) / 2;
+                            
+                            // Дистанция между центрами узлов должна быть равна:
+                            // (половина ширины A) + (зазор) + (половина ширины B)
+                            const gap = 20; // Минимальный отступ между группами в пикселях
+                            
+                            // Возвращаем коэффицент, на который умножится nodeSize[0] (который 1)
+                            // То есть просто возвращаем сумму в пикселях
+                            return widthA + widthB + gap;
                         });
+
                     treeLayout(root);
-                    // Масштабируем вертикальные координаты в зависимости от subsystemDistance
+
+                    // 3. Нормализация координат (чтобы не обрезалось слева)
+                    // D3 может расставить узлы так, что x станет отрицательным.
+                    // Находим самый левый край (с учетом параметров) и сдвигаем всё вправо.
                     
+                    let minLeftEdge = Infinity;
+                    
+                    // Сначала проходим и вычисляем будущие координаты (аналогично циклу отрисовки)
+                    // чтобы найти реальный левый край
                     root.each(d => {
-                        d.y = d.y * (subsystemDistance / 500);
+                        const width = getNodeWidth(d);
+                        // Если мы центрируем параметры, то левый край = d.x - width/2
+                        const leftEdge = d.x - width / 2;
+                        if (leftEdge < minLeftEdge) minLeftEdge = leftEdge;
                     });
+
+                    // Желаемый отступ от левого края контейнера
+                    const padding = 50;
+                    const offsetX = padding - minLeftEdge;
+
                     paramPositions = {};
-                     
-                     root.descendants().forEach(d => {
-                         const parameters = d.data.parameters || [];
-                         if (parameters.length > 0) {
-                             const startX = d.x + 50;
-                             const startY = d.y + 100;
-                             const spacing = parameterDistance;
-                             
-                             parameters.forEach((param, idx) => {
-                                 const paramX = startX + idx * spacing;
-                                 const paramY = startY;
-                                 
-                                 paramPositions[param.id] = { x: paramX, y: paramY };
-                                 
-                                 const circle = g.append('circle')
-                                     .attr('class', 'parameter-circle')
-                                     .attr('cx', paramX)
-                                     .attr('cy', paramY)
-                                     .attr('r', 8)
-                                     .attr('data-id', param.id)
-                                     .attr('data-name', param.name)
-                                     .attr('data-description', param.description || '')
-                                     .attr('data-measure', param.measure)
-                                     .attr('data-number', param.number)
-                                     .attr('data-is-goal', param.is_goal)
-                                     .attr('data-subsystem', d.data.name)
-                                     .on('click', function(event) {
-                                         showParameterInfo(this);
-                                     });
-                                 
-                                 g.append('text')
-                                     .attr('class', 'parameter-label')
-                                     .attr('x', paramX)
-                                     .attr('y', paramY + 20)
-                                     .text(param.name)
-                                     .style('font-size', '8px');
-                             });
-                         }
-                     });
+
+                    // 4. Отрисовка с центрированием групп
+                    root.descendants().forEach(d => {
+                        const parameters = d.data.parameters || [];
+                        
+                        // Применяем смещение offsetX к к��ординате узла
+                        const nodeCenterX = d.x + offsetX;
+                        const nodeY = d.y;
+
+                        // Рисуем название подсистемы (опционально, для наглядности)
+                        g.append('text')
+                            .attr('x', nodeCenterX)
+                            .attr('y', nodeY - 10)
+                            .attr('text-anchor', 'middle')
+                            .style('font-size', '10px')
+                            .style('fill', '#999')
+                            .text(d.data.name);
+
+                        if (parameters.length > 0) {
+                            const totalWidth = (parameters.length - 1) * parameterDistance;
+                            
+                            // Центрируем параметры относительно nodeCenterX
+                            // Начинаем с: центр - половина общей ширины
+                            const startX = nodeCenterX - totalWidth / 2;
+                            const startY = nodeY; 
+
+                            parameters.forEach((param, idx) => {
+                                const paramX = startX + idx * parameterDistance;
+                                const paramY = startY;
+
+                                paramPositions[param.id] = { x: paramX, y: paramY };
+
+                                const circle = g.append('circle')
+                                    .attr('class', 'parameter-circle')
+                                    .attr('cx', paramX)
+                                    .attr('cy', paramY)
+                                    .attr('r', 8)
+                                    .attr('data-id', param.id)
+                                    .attr('data-name', param.name)
+                                    .attr('data-description', param.description || '')
+                                    .attr('data-measure', param.measure)
+                                    .attr('data-number', param.number)
+                                    .attr('data-is-goal', param.is_goal)
+                                    .attr('data-subsystem', d.data.name)
+                                    .on('click', function(event) {
+                                        showParameterInfo(this);
+                                    });
+
+                                g.append('text')
+                                    .attr('class', 'parameter-label')
+                                    .attr('x', paramX)
+                                    .attr('y', paramY + 20)
+                                    .attr('text-anchor', 'middle') // Центрируем текст под кружком
+                                    .text(param.name)
+                                    .style('font-size', '8px');
+                            });
+                        }
+                    });
 
                     console.log("Дерево параметров успешно отрисовано");
-                    // Применяем текущие стили фильтрации
                     updateAffected(document.getElementById('goal-select').value);
                 }
 
