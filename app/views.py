@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from .models import SubSystem, Parameters , ParameterRelations
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.utils.safestring import mark_safe
@@ -18,7 +18,7 @@ buttons_list = [
     {'title': 'Форма для subsystem',                     'name_url': 'subsystem_form',          'additional_parameter':None},
     {'title': 'Форма для parameter',                     'name_url': 'parameters_form',         'additional_parameter':None},
    # {'title': 'Форма для parameter relations',           'name_url': 'parameter_relations_form','additional_parameter':None},
-    {'title': 'Форма для определения важных параметров',               'name_url': 'goal_parameter',          'additional_parameter':None},
+    {'title': 'Форма для определения важных параметров',               'name_url': 'goal_parameter_select',          'additional_parameter':None},
     {'title': 'Форма для отображения начатых и законченных процессов', 'name_url': 'show_processes',          'additional_parameter':None},
 ]
 
@@ -42,8 +42,8 @@ def edit_subsystem(request, subsystem_name):
                 return HttpResponseRedirect('/')
     return render(request, 'app/form_template.html', context = {'form': form})
 
-def edit_parameter(request, parameter_name):
-    parameter = get_object_or_404(Parameters, name=parameter_name)
+def edit_parameter(request, name_system, parameter_name):
+    parameter = get_object_or_404(Parameters, name=parameter_name, subsystem__name=name_system)
     if request.method == 'POST':
 
         form= ParametersForm(request.POST,instance = parameter)
@@ -77,7 +77,7 @@ def parameters_form(request, name_system=None):
         form = ParametersForm(request.POST)
         if form.is_valid():
             form.save()
-            return HttpResponseRedirect('/')
+            return redirect('parameters_form')
     if name_system!=None:
         system = get_object_or_404(SubSystem, name= name_system)
         form=ParametersForm(initial={'subsystem':system})
@@ -108,13 +108,18 @@ def show_system(request, name_system):
     return render(request, template_name = 'app/show_system.html', context={'system':system})
 
 
-def goal_parameter(request, name_goal_parameter=None):
+def goal_parameter_select(request):
+    parameters = Parameters.objects.exclude(subsystem=None).select_related('subsystem')
+    return render(request, 'app/goal_parameter/select.html', {'parameters': parameters})
+
+
+def goal_parameter(request, name_system=None, name_goal_parameter=None):
     #Должен быть участником какой-то подсистемы
     #Создаём связи в таблице relation
     #name_goal_parameter передаётся, если пользователь
     #Нажал на какую-то кнопку с параметром.
-    if name_goal_parameter!=None:
-        parameter=get_object_or_404(Parameters, name=name_goal_parameter)
+    if name_goal_parameter!=None and name_system!=None:
+        parameter=get_object_or_404(Parameters, name=name_goal_parameter, subsystem__name=name_system)
         system = parameter.subsystem
         # кнопка начать процесс нажата
         if not system:
@@ -147,18 +152,20 @@ def goal_parameter(request, name_goal_parameter=None):
             del data['csrfmiddlewaretoken']
             for key in data.keys():
                 value = request.POST[key]
-                from_parameter_rel = Parameters.objects.get(name=key, subsystem__name=value)
-                form = ParameterRelations(to_parameter=parameter, from_parameter=from_parameter_rel)
-                form.save()
-                return HttpResponseRedirect('/')
+                from_parameter_rel = Parameters.objects.filter(name=key, subsystem__name=value).first()
+                if from_parameter_rel:
+                    form = ParameterRelations(to_parameter=parameter, from_parameter=from_parameter_rel)
+                    form.save()
+            return HttpResponseRedirect('/')
         return render(request, 'app/tree_parameter.html', context={'parameter':parameter, 'system':system})
     else:
         parameters=Parameters.objects.exclude(subsystem=None)
         string=''
         for param in parameters:
+            subsystem_name = param.subsystem.name if param.subsystem else ''
             string +=f"""
 <div>
-<a href='/goal_parameter/{param.name}'><button>{param.name}</button></a>
+<a href='/goal_parameter/{subsystem_name}/{param.name}'><button>{param.name}</button></a>
 <p>{param}</p>
 </div>
 """
@@ -167,12 +174,12 @@ def goal_parameter(request, name_goal_parameter=None):
     
 
 
-def del_object(request,name_system=None, name_parameter=None, name_to_parameter=None, name_from_parameter=None):
-    if name_system!=None:
+def del_object(request, name_system=None, name_parameter=None, name_to_parameter=None, name_from_parameter=None):
+    if name_system!=None and name_parameter==None:
         system = get_object_or_404(SubSystem, name= name_system)
         system.delete()
-    elif name_parameter!=None:
-        parameter=get_object_or_404(Parameters, name=name_parameter)
+    elif name_system!=None and name_parameter!=None:
+        parameter=get_object_or_404(Parameters, name=name_parameter, subsystem__name=name_system)
         parameter.delete()
     else:
         parameter_relations = get_object_or_404(ParameterRelations, to_parameter__name=name_to_parameter, from_parameter__name = name_from_parameter)
@@ -190,7 +197,10 @@ def show_processes(request):
         # Когда пользователь её заполняет, его будет перекидывать на страницу с
         # процессами. 
         #part_process = ParameterRelations.objects.filter(is_affect__isnull=True)
-        part_process = ParameterRelations.objects.all()
+        part_process = ParameterRelations.objects.select_related(
+        'to_parameter__subsystem',
+        'from_parameter__subsystem'
+    ).all()
         #Я буду выводить кнопку для следующего этапа в процессе.
         to_rel =list()
         for data in part_process:
@@ -203,17 +213,19 @@ def show_processes(request):
             for data in part_process:
                 if data.to_parameter == goal_parameter:
                     parameters.append(data.from_parameter)
-            print(parameters)
-            min_number_systems=10000
-            min_param=None
-            min_param_num=100000
-            for param in parameters:
-                sys_num = param.subsystem.number
-                if sys_num<=min_number_systems:
-                    min_number_systems=sys_num
-                    if min_param_num>param.number:
-                        min_param_num = param.number
-                        min_param=param
+                print(parameters)
+                min_number_systems=10000
+                min_param=None
+                min_param_num=100000
+                for param in parameters:
+                    if not param.subsystem:
+                        continue
+                    sys_num = param.subsystem.number
+                    if sys_num<=min_number_systems:
+                        min_number_systems=sys_num
+                        if min_param_num>param.number:
+                            min_param_num=param.number
+                            min_param=param
             # Рассчитываем прогресс для этого целевого параметра
             total = ParameterRelations.objects.filter(to_parameter=goal_parameter).count()
             processed = ParameterRelations.objects.filter(to_parameter=goal_parameter, is_affect__isnull=False).count()
@@ -221,19 +233,29 @@ def show_processes(request):
                 percent = int(processed * 100 / total)
             else:
                 percent = 0
+
+            if not min_param:
+                percent = 100  # Если нет min_param, считаем процесс завершённым
+
             pairs_with_progress.append({
                 'min_parameter': min_param,
                 'goal_parameter': goal_parameter,
                 'percent': percent
             })
-        active_processes = [p for p in pairs_with_progress if p['percent'] < 100]
-        completed_processes = [p for p in pairs_with_progress if p['percent'] == 100]
+        active_processes = [p for p in pairs_with_progress if p['percent'] < 100 and p['min_parameter'] is not None]
+        completed_processes = [p for p in pairs_with_progress if p['percent'] == 100 or p['min_parameter'] is None]
         
         return render(request, template_name='app/processes.html', context={'active_processes': active_processes, 'completed_processes': completed_processes})
 
 
-def form_goal_parameter(request, name_goal_parameter, name_min_parameter):
-    rel = get_object_or_404(ParameterRelations, to_parameter__name=name_goal_parameter, from_parameter__name=name_min_parameter)
+def form_goal_parameter(request, name_system, name_goal_parameter, name_min_subsystem, name_min_parameter):
+    rel = get_object_or_404(
+        ParameterRelations,
+        to_parameter__name=name_goal_parameter,
+        to_parameter__subsystem__name=name_system,
+        from_parameter__name=name_min_parameter,
+        from_parameter__subsystem__name=name_min_subsystem
+    )
 
     if request.method=='POST':
         data = request.POST
@@ -244,25 +266,33 @@ def form_goal_parameter(request, name_goal_parameter, name_min_parameter):
             print('-'*100)
             print(mins)
             print('-'*100)
-            # Сейчас делаю через mins[0][0], но это не верно. 
-            # Надо искать goal_parameter
             if len(mins)==0:
                 return HttpResponseRedirect(
                     reverse(
                         viewname='main_page'
                     )
                 )
+            goal_system = rel.to_parameter.subsystem.name
+            min_system = mins[0][0].subsystem.name
             return HttpResponseRedirect(
                 reverse(
                     viewname = 'form_goal_parameter',
                     kwargs={
+                        'name_system': goal_system,
                         'name_goal_parameter': name_goal_parameter,
+                        'name_min_subsystem': min_system,
                         'name_min_parameter':mins[0][0].name,
                     }
                 )
             )
-        
-    rel = get_object_or_404(ParameterRelations, to_parameter__name=name_goal_parameter, from_parameter__name=name_min_parameter)
+
+    rel = get_object_or_404(
+        ParameterRelations,
+        to_parameter__name=name_goal_parameter,
+        to_parameter__subsystem__name=name_system,
+        from_parameter__name=name_min_parameter,
+        from_parameter__subsystem__name=name_min_subsystem
+    )
     form = ParameterRelationsFormSecond(instance=rel)
     return render(request,
                    template_name="app/form_goal_parameter.html",
@@ -303,7 +333,7 @@ def parameters_tree_goal_show(request, parameter, system):
     #Пробежаться по подсистемам и там найти
     system=get_object_or_404(SubSystem, name=system)
     parameter_affect_goal = who_is_matter(parameter)
-    parameter = get_object_or_404(Parameters, name=parameter)
+    parameter = get_object_or_404(Parameters, name=parameter, subsystem__name=system)
 
     return render(request, 
                   template_name='app/goal_parameter/tree_goal_parameter.html', 
@@ -333,17 +363,19 @@ def find_min():
         for data in part_process:
             if data.to_parameter == goal_parameter:
                 parameters.append(data.from_parameter)
-        print(parameters)
-        min_number_systems=10000
-        min_param=None
-        min_param_num=100000
-        for param in parameters:
-            sys_num = param.subsystem.number
-            if sys_num<=min_number_systems:
-                min_number_systems=sys_num
-                if min_param_num>param.number:
-                    min_param_num = param.number
-                    min_param=param
+                print(parameters)
+                min_number_systems=10000
+                min_param=None
+                min_param_num=100000
+                for param in parameters:
+                    if not param.subsystem:
+                        continue
+                    sys_num = param.subsystem.number
+                    if sys_num<=min_number_systems:
+                        min_number_systems=sys_num
+                        if min_param_num>param.number:
+                            min_param_num=param.number
+                            min_param=param
         result.append((min_param, goal_parameter))
     return result
 
@@ -444,7 +476,7 @@ def api_goal_parameters_tree(request, name_parameter, name_system, number):
 
 def goal_parameters_tree(request, name_parameter, name_system, number):
     system = get_object_or_404(SubSystem, name=name_system)
-    parameter = get_object_or_404(Parameters, name=name_parameter, number=number)
+    parameter = get_object_or_404(Parameters, name=name_parameter, number=number, subsystem__name = name_system)
     return render(request, 'app/d3/goal_parameters_tree.html', {'node':system,'goal_parameter':parameter})
 
 def rec_change_parameter(data, id):

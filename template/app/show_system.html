@@ -13,7 +13,7 @@
         <ul>
 
             {% for parameter in system.parameters.all %}
-                <li><a href="/edit/parameter/{{parameter.name}}">{{parameter.name}}</a></li>
+                <li><a href="/edit/parameter/{{system.name}}/{{parameter.name}}">{{parameter.name}}</a></li>
                 {% if forloop.last%}<li><p><a href="/parameter/{{system.name}}"><button>Добавить параметры</button></a></p></li>
                 {%endif%}
             {% empty %}

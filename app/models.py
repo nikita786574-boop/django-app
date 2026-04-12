@@ -61,7 +61,7 @@ class Parameters(models.Model):
             'is_affect': False,
         }
     class Meta:
-        unique_together=('subsystem', 'number')
+        unique_together=('subsystem', 'number', 'name')
     
 class ParameterRelations(models.Model):
     from_parameter =  models.ForeignKey(Parameters,

@@ -232,7 +232,7 @@
                                 if (!params || params.length === 0) {
                                     return "";
                                 }
-                                let paramBaseUrl = "{% url 'edit_parameter' 'PARAM_PLACEHOLDER' %}";
+                                let paramBaseUrl = "{% url 'edit_parameter' 'SYSTEM_PLACEHOLDER' 'PARAM_PLACEHOLDER' %}".replace('SYSTEM_PLACEHOLDER', node.name);
                                 let items = "";
                                 params.forEach(p => {
                                     const url = paramBaseUrl.replace('PARAM_PLACEHOLDER', p.name);
@@ -327,12 +327,12 @@
                     if (data.description) {
                         html += `<em>${data.description}</em><br>`;
                     }
-                    const paramBaseUrl = "{% url 'edit_parameter' 'PARAM_PLACEHOLDER' %}";
+                    const paramBaseUrl = "{% url 'edit_parameter' 'SYSTEM_PLACEHOLDER' 'PARAM_PLACEHOLDER' %}".replace('SYSTEM_PLACEHOLDER', node.name);
                     if (data.parameters && data.parameters.length > 0) {
 
                         html += `
                 <div class="dropdown mt-2">
-                    <button class="btn btn-primary dropdown-toggle" 
+                    <button class="btn btn-primary dropdown-toggle"
                             type="button"
                             data-bs-toggle="dropdown">
                         Параметры (${data.parameters.length})

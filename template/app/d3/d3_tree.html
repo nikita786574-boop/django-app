@@ -218,7 +218,7 @@
                 .html(d => {
                     const params = d.data.parameters;
                     if (!params) return "";
-                    const paramBaseUrl = "{% url 'edit_parameter' 'PARAM_PLACEHOLDER' %}";
+                    const paramBaseUrl = "{% url 'edit_parameter' 'SYSTEM_PLACEHOLDER' 'PARAM_PLACEHOLDER' %}".replace('SYSTEM_PLACEHOLDER', d.data.name);
                     let items = "";
                     params.forEach(p => {
                         const url = paramBaseUrl.replace('PARAM_PLACEHOLDER', p.name);
