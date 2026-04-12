@@ -128,7 +128,7 @@ def goal_parameter(request, name_system=None, name_goal_parameter=None):
 <h2>Параметер не привязан к какой-либо системе</h2>""")
             return render(request,'app/with_context.html',context={'title':title, 'content':content})
         
-        if any(ParameterRelations.objects.filter(to_parameter__name=name_goal_parameter)):
+        if any(ParameterRelations.objects.filter(to_parameter__name=name_goal_parameter, to_parameter__subsystem__name=name_system)):
             content = mark_safe("""
 <h2>Процесс этим параметром уже создан.</h2>""")
             title='Ошибка'

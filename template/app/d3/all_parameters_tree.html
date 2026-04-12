@@ -207,15 +207,20 @@
                     root.each(d => {
                         d.y = d.y * (subsystemDistance / 500);
                     });
-
+                    const GROUP_GAP = 50;
+                    let cumulativeGroupeOffset = 0;
                     paramPositions = {};
                     root.descendants().forEach(d => {
                         const parameters = d.data.parameters || [];
                         parameters.forEach((param, idx) => {
-                            const startX = d.x + 50 + idx * parameterDistance;
+                            const startX = d.x + 50 + idx * parameterDistance + cumulativeGroupeOffset;
                             const startY = d.y + 100;
                             paramPositions[param.id] = { x: startX, y: startY };
                         });
+                        if (parameters.length > 0) {
+                            const groupWidth = parameters.length * parameterDistance;
+                            cumulativeGroupeOffset += groupWidth + GROUP_GAP;
+                        }
                     });
                     // Рисуем только параметры каждого узла как маленькие кружочки
                     root.descendants().forEach(d => {
@@ -227,7 +232,7 @@
                             const spacing = parameterDistance; // расстояние между параметрами
                             
                             parameters.forEach((param, idx) => {
-                                const paramX = startX + idx * spacing;
+                                const paramX = startX + idx * spacing + cumulativeGroupeOffset;
                                 const paramY = startY;
                                 
                                 const circle = g.append('circle')
@@ -254,7 +259,12 @@
                                     .text(param.name)
                                     .style('font-size', '8px');
                             });
+                            if (parameters.length > 0) {
+                                const groupWidth = parameters.length * spacing;
+                                cumulativeGroupeOffset += groupWidth + GROUP_GAP;
+                            }
                         }
+
                     });
 
                     console.log("Дерево параметров успешно отрисовано");
