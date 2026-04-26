@@ -164,12 +164,30 @@
             //Преобразование в иерархию D3
             const root =d3.hierarchy(data);
 
+            // Функция для расчета ширины узла (количество параметров + кнопка)
+            const getNodeWidth = (node) => {
+                const count = (node.data.parameters || []).length;
+                // Ширина всей области справа от круга = 30 (x offset) + 120 (button width) + dropdowns
+                // Итого примерно 30+120+запас = 200px когда есть параметры
+                return count === 0 ? 100 : 200 + (count - 1) * 30;
+            };
+
             const treeLayout = d3.tree()
-            .size([width, height * 2])
-            .separation((a,b)=>{
-                return (a.parent == b.parent ? 4.5 : 2);
-            });
+                .nodeSize([1, 350]) // [dx, dy]
+                .separation((a, b) => {
+                    const widthA = getNodeWidth(a);
+                    const widthB = getNodeWidth(b);
+                    const gap = 100;
+                    return (widthA + widthB + gap) * 1.5;
+                });
             treeLayout(root);
+
+            // Нормализация координат
+            let minX = Infinity;
+            root.each(d => {
+                if (d.x < minX) minX = d.x;
+            });
+            const offsetX = 50 - minX;
 
             //Рисуем связи Link
             g.selectAll(".link")
@@ -178,8 +196,8 @@
                 .append('path')
                 .attr('class','link')
                 .attr("d", d3.linkVertical()
-                            .x(d=>d.x+500)
-                            .y(d=>d.y+100))
+                            .x(d=>d.x + offsetX + 50)
+                            .y(d=>d.y + 50))
                 .style('fill', 'none')
                 .style('stroke', '#ccc')
                 .style('stroke-width','4px');
@@ -190,7 +208,7 @@
                 .enter()
                 .append('g')
                 .attr('class', 'node')
-                .attr('transform', d=>`translate(${d.x+500},${d.y+100})`)
+                .attr('transform', d=>`translate(${d.x + offsetX + 50},${d.y + 50})`)
                 .on('click', function(event, d){
                     showNodeInfo(d.data);
                 });

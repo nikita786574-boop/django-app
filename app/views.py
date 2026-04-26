@@ -20,6 +20,7 @@ buttons_list = [
    # {'title': 'Форма для parameter relations',           'name_url': 'parameter_relations_form','additional_parameter':None},
     {'title': 'Форма для определения важных параметров',               'name_url': 'goal_parameter_select',          'additional_parameter':None},
     {'title': 'Форма для отображения начатых и законченных процессов', 'name_url': 'show_processes',          'additional_parameter':None},
+    
 ]
 
 
@@ -127,16 +128,35 @@ def goal_parameter(request, name_system=None, name_goal_parameter=None):
             content = mark_safe("""
 <h2>Параметер не привязан к какой-либо системе</h2>""")
             return render(request,'app/with_context.html',context={'title':title, 'content':content})
-        
+
         if any(ParameterRelations.objects.filter(to_parameter__name=name_goal_parameter, to_parameter__subsystem__name=name_system)):
             content = mark_safe("""
 <h2>Процесс этим параметром уже создан.</h2>""")
             title='Ошибка'
             return render(request,'app/with_context.html',context={'title':title, 'content':content})
         
+        # Помимо связей с параметрами нижних уровней надо сосздавать свзяи с паарметрами того же самого ур
+        same_level_parameters = Parameters.objects.filter(subsystem = system).all()
+        for same_level_parameter in same_level_parameters:
+            if same_level_parameter != parameter:
+                rel = ParameterRelations(
+                    to_parameter = parameter,
+                    from_parameter = same_level_parameter,
+                    is_affect = None
+                )
+                rel.save()
+
+
         #Надо создать много связей в parameter relations
         children = system.children
+
+
         print(type(children))
+        if all([child.parameters.all()==[] for child in children.all()]):
+            content = mark_safe("""
+<h2>У этого параметра нет параметров нижних уровней.</h2>""")
+            title='Ошибка'
+            return render(request,'app/with_context.html',context={'title':title, 'content':content})
         for child in children.all():
             for param in child.parameters.all():
                 rel = ParameterRelations(
