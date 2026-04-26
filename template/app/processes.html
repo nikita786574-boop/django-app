@@ -28,7 +28,7 @@
         {%for pair in active_processes%}
             <div class="card">
                 {% if pair.min_parameter.subsystem %}
-                <a href="/form_goal_parameter/{{pair.goal_parameter.subsystem.name}}/{{pair.goal_parameter.name}}/{{pair.min_parameter.subsystem.name}}/{{pair.min_parameter.name}}"><button>{{pair.goal_parameter.name}}</button></a>
+                <a href="{% url 'form_goal_parameter' pair.goal_parameter.subsystem.name pair.goal_parameter.name pair.min_parameter.subsystem.name pair.min_parameter.name %}"><button>{{pair.goal_parameter.name}}</button></a>
                 {% else %}
                 <button disabled>Нет подсистемы</button>
                 {% endif %}
@@ -54,11 +54,8 @@
     <div class="grid">
         {%for pair in completed_processes%}
             <div class = "card card-completed">
-                {% if pair.min_parameter.subsystem %}
-                <a href="/form_goal_parameter/{{pair.goal_parameter.subsystem.name}}/{{pair.goal_parameter.name}}/{{pair.min_parameter.subsystem.name}}/{{pair.min_parameter.name}}"><button>{{pair.goal_parameter.name}}</button></a>
-                {% else %}
-                <button disabled>Нет подсистемы</button>
-                {% endif %}
+                <a href="{% url 'important_matrices' pair.goal_parameter.name pair.goal_parameter.subsystem.name pair.goal_parameter.number%}"><button>{{pair.goal_parameter.name}}</button></a>
+                
                 <div>
                     COMPLETE
                 </div>
