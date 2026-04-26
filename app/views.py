@@ -540,4 +540,22 @@ def important_matrices(request, name_goal_parameter, name_system, number):
     print(name_goal_parameter)
     print(name_system)
     print(number)
-    return HttpResponseRedirect('/')
+    parameter = Parameters.objects.get(name = name_goal_parameter, subsystem__name = name_system, number=number)
+    if request.method == 'GET':
+        all_relations = ParameterRelations.objects.filter(to_parameter__name = name_goal_parameter)
+        print('1'*100)
+        #Я буду выводить кнопку для следующего этапа в процессе.
+        
+        data_for_completed_processes = {'same_level':[], 'low_level':[]}
+        for relation in all_relations:
+            print(relation)
+            to_par = relation.to_parameter
+            from_par = relation.from_parameter
+            print(to_par.subsystem)
+            print(from_par.subsystem)
+            if to_par.subsystem != from_par.subsystem:
+                data_for_completed_processes['low_level'].append(to_par)
+            else:
+                data_for_completed_processes['same_level'].append(from_par)
+            
+        return render(request=request, template_name='app/important_matrices/important_matrices.html', context={'goal_parameter': parameter, 'data':data_for_completed_processes})
