@@ -114,5 +114,11 @@ urlpatterns = [
          view = views.goal_parameters_tree,
          name = 'goal_parameters_tree',
      ),
+
+     path (
+         route = 'important/matrices/<str:name_goal_parameter>/<str:name_system>/<int:number>',
+         view = views.important_matrices,
+         name = 'important_matrices',
+     ),
      
 ]
