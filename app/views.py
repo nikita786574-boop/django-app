@@ -545,8 +545,8 @@ def important_matrices(request, name_goal_parameter, name_system, number):
         all_relations = ParameterRelations.objects.filter(to_parameter__name = name_goal_parameter)
         print('1'*100)
         #Я буду выводить кнопку для следующего этапа в процессе.
-        
-        data_for_completed_processes = {'same_level':[], 'low_level':[]}
+        same_level = []
+        low_level = []
         for relation in all_relations:
             print(relation)
             to_par = relation.to_parameter
@@ -554,8 +554,42 @@ def important_matrices(request, name_goal_parameter, name_system, number):
             print(to_par.subsystem)
             print(from_par.subsystem)
             if to_par.subsystem != from_par.subsystem:
-                data_for_completed_processes['low_level'].append(to_par)
+                low_level.append(from_par)
             else:
-                data_for_completed_processes['same_level'].append(from_par)
-            
-        return render(request=request, template_name='app/important_matrices/important_matrices.html', context={'goal_parameter': parameter, 'data':data_for_completed_processes})
+                same_level.append(from_par)
+        
+        count_same_level = len(same_level)
+        
+        count_low_level = len(low_level)
+        matrix_same_level = [[] for i in range(count_same_level+2)]
+        matrix_low_level = [[] for i in range(count_low_level)]
+        for i in range(count_same_level+2):
+            for j in range(count_same_level+2):
+                if i ==  j :
+                    matrix_same_level[i].append("-")
+                elif i==0 and j == 1:
+                    matrix_same_level[i].append(name_goal_parameter)
+                elif i==0:
+                    matrix_same_level[i].append(same_level[j-2].name)
+                elif j == 0 and i == 1:
+                    matrix_same_level[i].append(name_goal_parameter)
+                elif j==0:
+                    matrix_same_level[i].append(same_level[i-2].name)
+                else:
+                    matrix_same_level[i].append('none')
+        
+        for i in range(2):
+            for j in range(count_low_level+1):
+                if i ==  j :
+                    matrix_low_level[i].append("-")
+                elif i==0:
+                    matrix_low_level[i].append(low_level[j-1].name)
+                elif i == 1 and j == 0:
+                    matrix_low_level[i].append(name_goal_parameter)
+                else:
+                    matrix_low_level[i].append('none')
+        return render(request=request, template_name='app/important_matrices/important_matrices.html', context={'goal_parameter': parameter,
+                                                                                                                 'count_same_level': range(count_same_level+2),
+                                                                                                                 'count_low_level': range(count_low_level+2),
+                                                                                                                   'matrix_low_level': matrix_low_level,
+                                                                                                                   'matrix_same_level':matrix_same_level})
