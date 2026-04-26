@@ -255,6 +255,7 @@ def show_processes(request):
                 percent = 0
 
             if not min_param:
+                print('1'*100)
                 percent = 100  # Если нет min_param, считаем процесс завершённым
 
             pairs_with_progress.append({
@@ -265,6 +266,20 @@ def show_processes(request):
         active_processes = [p for p in pairs_with_progress if p['percent'] < 100 and p['min_parameter'] is not None]
         completed_processes = [p for p in pairs_with_progress if p['percent'] == 100 or p['min_parameter'] is None]
         
+        #Что будет в min_parameter и completed_processes
+        data_for_completed_processes = []
+        goal_parameters_with_full_progress = [p['goal_parameter'] for p in completed_processes]
+        # print('\n')
+        # print(goal_parameters_with_full_progress[0])
+        # print('\n')
+        # print(completed_processes[0])
+        for goal_parameter in goal_parameters_with_full_progress:
+            #Для каждого параметра создаю список с 
+            #Параметрами того же самого уровня, которые влияют на цель
+            #Параметрами нижнего уровня, которе влияют на цель?
+            #Нет, просто надо создать кнопку редирект на другую страницу, для этого достаточно 
+            #просто имени параметра, это всё не нужно
+            pass
         return render(request, template_name='app/processes.html', context={'active_processes': active_processes, 'completed_processes': completed_processes})
 
 
@@ -519,3 +534,10 @@ def get_all_parameters_recursive(subsystem):
         params.extend(get_all_parameters_recursive(child))
     return params
     
+
+
+def important_matrices(request, name_goal_parameter, name_system, number):
+    print(name_goal_parameter)
+    print(name_system)
+    print(number)
+    return HttpResponseRedirect('/')
