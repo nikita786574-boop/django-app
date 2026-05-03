@@ -1,5 +1,5 @@
 from django import forms
-from .models import SubSystem, Parameters, ParameterRelations
+from .models import SubSystem, Parameters, ParameterRelations, ParameterImportance
 class SubSystemForm(forms.ModelForm):
     class Meta:
         model = SubSystem
@@ -31,3 +31,11 @@ class ParameterRelationsFormSecond(forms.ModelForm):
     class Meta:
         model = ParameterRelations
         fields=['is_affect']
+
+class ParameterImportanceForm(forms.ModelForm):
+    class Meta:
+        model = ParameterImportance
+        fields = ['value']
+        widgets = {
+            'value': forms.NumberInput(attrs={'class':'form-control', 'placeholder':'Введите важность'})
+        }

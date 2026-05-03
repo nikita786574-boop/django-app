@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import SubSystem, Parameters , ParameterRelations
+from .models import SubSystem, Parameters , ParameterRelations, ParameterImportance
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.utils.safestring import mark_safe
 from .forms import SubSystemForm, ParametersForm, ParameterRelationsForm
@@ -594,4 +594,29 @@ def important_matrices(request, name_goal_parameter, name_system, number):
                                                                                                                    'matrix_low_level': matrix_low_level,
                                                                                                        'matrix_same_level':matrix_same_level})
 def new_view(request, name_goal_parameter, name_system, number):
-    pass
+    if request.method=='POST':
+        pass
+    goal_parameter = Parameters.objects.get(name = name_goal_parameter, subsystem__name = name_system, number=number)
+    
+    all_relations = ParameterRelations.objects.filter(to_parameter__name = name_goal_parameter, from_parameter__subsystem__name=name_system)
+    for relation in all_relations:
+        print(relation)
+    affected_parameters = [relation.from_parameter for relation in all_relations]
+    all_parameters = affected_parameters+[goal_parameter]
+    all_parameters_importance = []
+    for i in range(len(all_parameters)):
+        for j in range(len(all_parameters)):
+            one1=ParameterImportance.objects.filter(second_parameter=all_parameters[i], first_parameter = all_parameters[j])
+            second2=ParameterImportance.objects.filter(first_parameter=all_parameters[i], second_parameter = all_parameters[j])
+            if len(one1)==0 and len(second2)==0:
+                if i!=j:
+                    obj = ParameterImportance(first_parameter = all_parameters[i], second_parameter = all_parameters[j])
+                    obj.save()
+                    all_parameters_importance.append(obj)
+            if len(one1)==1:
+                all_parameters_importance.append(one1[0])
+            elif len(second2) ==1:
+                all_parameters_importance.append(second2[0])
+    all_parameters_importance_without_value = [parameter_importance for parameter_importance in all_parameters_importance if parameter_importance.value == 0]
+    return render(request, template_name='app/important_matrices/important_matrices_form.html', context={'parameter_importance':all_parameters_importance_without_value[0]})
+    
