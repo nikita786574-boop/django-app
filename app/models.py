@@ -74,3 +74,15 @@ class ParameterRelations(models.Model):
 
     def __str__(self):
         return f"{self.from_parameter} -> {self.to_parameter}"
+
+class ParameterImportance(models.Model):
+    """В модель заностятся два параметра. Если value = -1, то второй важнее первого
+    Если value = 1, то первый важнее второго"""
+    first_parameter = models.ForeignKey(Parameters,
+                                        on_delete = models.CASCADE,
+                                        related_name='first_parameter')
+    second_parameter = models.ForeignKey(Parameters,
+                                         on_delete = models.CASCADE,
+                                         related_name = 'second_parameter')
+    value = models.IntegerField(help_text = 'Кто влияет')
+    
