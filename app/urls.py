@@ -120,5 +120,9 @@ urlpatterns = [
          view = views.important_matrices,
          name = 'important_matrices',
      ),
-     
+     path (
+        route = 'important/matrices/process/<str:name_goal_parameter>/<str:name_system>/<int:number>',
+        view = views.new_view,
+        name = 'important_matrices_process',    
+     ),
 ]

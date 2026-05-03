@@ -580,7 +580,7 @@ def important_matrices(request, name_goal_parameter, name_system, number):
         
         for i in range(2):
             for j in range(count_low_level+1):
-                if i ==  j :
+                if i ==  j ==0:
                     matrix_low_level[i].append("-")
                 elif i==0:
                     matrix_low_level[i].append(low_level[j-1].name)
@@ -592,4 +592,6 @@ def important_matrices(request, name_goal_parameter, name_system, number):
                                                                                                                  'count_same_level': range(count_same_level+2),
                                                                                                                  'count_low_level': range(count_low_level+2),
                                                                                                                    'matrix_low_level': matrix_low_level,
-                                                                                                                   'matrix_same_level':matrix_same_level})
+                                                                                                       'matrix_same_level':matrix_same_level})
+def new_view(request, name_goal_parameter, name_system, number):
+    pass
