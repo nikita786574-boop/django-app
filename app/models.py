@@ -84,5 +84,5 @@ class ParameterImportance(models.Model):
     second_parameter = models.ForeignKey(Parameters,
                                          on_delete = models.CASCADE,
                                          related_name = 'second_parameter')
-    value = models.IntegerField(help_text = 'Кто влияет')
+    value = models.IntegerField(help_text = 'Кто влияет', default=0)
     

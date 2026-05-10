@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .models import SubSystem, Parameters , ParameterRelations, ParameterImportance
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.utils.safestring import mark_safe
-from .forms import SubSystemForm, ParametersForm, ParameterRelationsForm
+from .forms import SubSystemForm, ParametersForm, ParameterRelationsForm, ParameterImportanceForm
 
 from django.urls import reverse
 
@@ -541,6 +541,12 @@ def important_matrices(request, name_goal_parameter, name_system, number):
     print(name_system)
     print(number)
     parameter = Parameters.objects.get(name = name_goal_parameter, subsystem__name = name_system, number=number)
+    all_relations = ParameterRelations.objects.filter(to_parameter__name = name_goal_parameter, from_parameter__subsystem__name=name_system)
+    affected_parameters = [relation.from_parameter for relation in all_relations]
+    for relation in all_relations:
+        print(relation)
+    all_parameters = affected_parameters+[parameter]
+    all_parameters_importance = list(ParameterImportance.objects.filter(first_parameter__in=all_parameters))
     if request.method == 'GET':
         all_relations = ParameterRelations.objects.filter(to_parameter__name = name_goal_parameter)
         print('1'*100)
@@ -576,7 +582,9 @@ def important_matrices(request, name_goal_parameter, name_system, number):
                 elif j==0:
                     matrix_same_level[i].append(same_level[i-2].name)
                 else:
-                    matrix_same_level[i].append('none')
+                    obj = ParameterImportance.objects.filter(first_parameter__in =[same_level[i-2],same_level[j-2]], second_parameter__in=[same_level[i-2],same_level[j-2]])
+                    
+                    matrix_same_level[i].append(len(obj))
         
         for i in range(2):
             for j in range(count_low_level+1):
@@ -594,14 +602,11 @@ def important_matrices(request, name_goal_parameter, name_system, number):
                                                                                                                    'matrix_low_level': matrix_low_level,
                                                                                                        'matrix_same_level':matrix_same_level})
 def new_view(request, name_goal_parameter, name_system, number):
-    if request.method=='POST':
-        pass
     goal_parameter = Parameters.objects.get(name = name_goal_parameter, subsystem__name = name_system, number=number)
-    
     all_relations = ParameterRelations.objects.filter(to_parameter__name = name_goal_parameter, from_parameter__subsystem__name=name_system)
+    affected_parameters = [relation.from_parameter for relation in all_relations]
     for relation in all_relations:
         print(relation)
-    affected_parameters = [relation.from_parameter for relation in all_relations]
     all_parameters = affected_parameters+[goal_parameter]
     all_parameters_importance = []
     for i in range(len(all_parameters)):
@@ -618,5 +623,13 @@ def new_view(request, name_goal_parameter, name_system, number):
             elif len(second2) ==1:
                 all_parameters_importance.append(second2[0])
     all_parameters_importance_without_value = [parameter_importance for parameter_importance in all_parameters_importance if parameter_importance.value == 0]
-    return render(request, template_name='app/important_matrices/important_matrices_form.html', context={'parameter_importance':all_parameters_importance_without_value[0]})
+    
+    if request.method=='POST':
+        form = ParameterImportanceForm(request.POST, instance =all_parameters_importance_without_value[0])
+        if form.is_valid():
+            form.save()
+            return redirect(request.path_info)
+    else:
+        form = ParameterImportanceForm(instance=all_parameters_importance_without_value[0])
+        return render(request, template_name='app/important_matrices/important_matrices_form.html', context={'parameter_importance':all_parameters_importance_without_value[0],'form':form})
     
