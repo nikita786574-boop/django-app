@@ -2,7 +2,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path(route='parameter/<str:name_system>', view = views.parameters_form, name= 'parameters_form'),
+    path(route='parameter/<str:name_system>', view = views.parameters_form, name= 'parameters_form_system'),
  
 
     path("edit/subsystem/<str:subsystem_name>/", views.edit_subsystem, name="edit_subsystem"),
