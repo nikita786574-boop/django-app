@@ -123,6 +123,18 @@ urlpatterns = [
      path (
         route = 'important/matrices/process/<str:name_goal_parameter>/<str:name_system>/<int:number>',
         view = views.new_view,
-        name = 'important_matrices_process',    
+        name = 'important_matrices_process',
+     ),
+
+     # Тип связи (А1/А2/А3) — форма и матрица (Таблица 27)
+     path(
+         route = 'relation/type/process/<str:name_goal_parameter>/<str:name_system>/<int:number>',
+         view = views.relation_type_process,
+         name = 'relation_type_process',
+     ),
+     path(
+         route = 'relation/type/matrix/<str:name_goal_parameter>/<str:name_system>/<int:number>',
+         view = views.relation_type_matrix,
+         name = 'relation_type_matrix',
      ),
 ]

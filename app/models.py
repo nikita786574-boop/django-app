@@ -78,11 +78,27 @@ class ParameterRelations(models.Model):
 class ParameterImportance(models.Model):
     """В модель заностятся два параметра. Если value = -1, то второй важнее первого
     Если value = 1, то первый важнее второго"""
+
+    RELATION_TYPE_CHOICES = [
+        ('A1', 'А1 — Противоречивая'),
+        ('A2', 'А2 — Согласованная'),
+        ('A3', 'А3 — Нейтральная'),
+    ]
+
     first_parameter = models.ForeignKey(Parameters,
-                                        on_delete = models.CASCADE,
+                                        on_delete=models.CASCADE,
                                         related_name='first_parameter')
     second_parameter = models.ForeignKey(Parameters,
-                                         on_delete = models.CASCADE,
-                                         related_name = 'second_parameter')
-    value = models.IntegerField(help_text = 'Кто влияет', default=0)
-    
+                                                                    on_delete=models.CASCADE,
+                                         related_name='second_parameter')
+    value = models.IntegerField(help_text='Кто влияет', default=0)
+    relation_type = models.CharField(
+        max_length=2,
+        choices=RELATION_TYPE_CHOICES,
+        blank=True,
+        null=True,
+        help_text='Тип связи между параметрами (А1/А2/А3)',
+    )
+
+    def __str__(self):
+        return f"{self.first_parameter.name} <-> {self.second_parameter.name} (value={self.value}, type={self.relation_type or '-'})"

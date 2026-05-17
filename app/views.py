@@ -3,7 +3,7 @@ from .models import SubSystem, Parameters, ParameterRelations, ParameterImportan
 from django.http import Http404, HttpResponseRedirect
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
-from .forms import SubSystemForm, ParametersForm, ParameterRelationsForm, ParameterImportanceForm
+from .forms import SubSystemForm, ParametersForm, ParameterRelationsForm, ParameterImportanceForm, ParameterRelationTypeForm
 from django.urls import reverse
 from app.forms import ParameterRelationsFormSecond
 from django.http import JsonResponse
@@ -531,5 +531,100 @@ def new_view(request, name_goal_parameter, name_system, number):
         form = ParameterImportanceForm(instance=all_parameters_importance_without_value[0])
     return render(request, template_name='app/important_matrices/important_matrices_form.html', context={
         'parameter_importance': all_parameters_importance_without_value[0],
+          'form': form,
+    })
+
+
+def relation_type_process(request, name_goal_parameter, name_system, number):
+    """Форма заполнения типа связи (А1/А2/А3) для каждой пары параметров."""
+    goal_parameter = get_object_or_404(Parameters, name=name_goal_parameter, subsystem__name=name_system, number=number)
+    all_relations = ParameterRelations.objects.filter(
+        to_parameter__name=name_goal_parameter,
+        from_parameter__subsystem__name=name_system,
+    )
+    affected_parameters = [rel.from_parameter for rel in all_relations]
+    all_parameters = affected_parameters + [goal_parameter]
+
+    # Собираем все уникальные пары ParameterImportance для этого набора
+    all_pairs = []
+    seen = set()
+    for i in range(len(all_parameters)):
+        for j in range(len(all_parameters)):
+            if i == j:
+                continue
+            p1, p2 = all_parameters[i], all_parameters[j]
+            key = tuple(sorted([p1.pk, p2.pk]))
+            if key in seen:
+                continue
+            seen.add(key)
+            obj = (
+                ParameterImportance.objects.filter(first_parameter=p1, second_parameter=p2).first()
+                or ParameterImportance.objects.filter(first_parameter=p2, second_parameter=p1).first()
+            )
+            if obj:
+                all_pairs.append(obj)
+
+    pending = [pi for pi in all_pairs if not pi.relation_type]
+
+    if not pending:
+        return render(request, 'app/with_context.html', context={
+            'title': 'Готово',
+            'content': mark_safe('<h2>Типы связей для всех пар уже определены.</h2>'),
+        })
+
+    current = pending[0]
+
+    if request.method == 'POST':
+        form = ParameterRelationTypeForm(request.POST, instance=current)
+        if form.is_valid():
+            form.save()
+            return redirect(request.path_info)
+    else:
+        form = ParameterRelationTypeForm(instance=current)
+
+    return render(request, template_name='app/important_matrices/relation_type_form.html', context={
+        'parameter_importance': current,
         'form': form,
+        'done': len(all_pairs) - len(pending),
+        'total': len(all_pairs),
+        'goal_parameter': goal_parameter,
+    })
+
+
+def relation_type_matrix(request, name_goal_parameter, name_system, number):
+    """Таблица 27: матрица типов связей (А1/А2/А3) между параметрами."""
+    goal_parameter = get_object_or_404(Parameters, name=name_goal_parameter, subsystem__name=name_system, number=number)
+    all_relations = ParameterRelations.objects.filter(
+        to_parameter__name=name_goal_parameter,
+        from_parameter__subsystem__name=name_system,
+    )
+    affected_parameters = [rel.from_parameter for rel in all_relations]
+    all_parameters = affected_parameters + [goal_parameter]
+
+    # Fetch all relevant ParameterImportance objects in one query
+    # and build a frozenset-keyed lookup for symmetric pair lookup
+    pair_lookup = {}
+    for pi in ParameterImportance.objects.filter(
+        first_parameter__in=all_parameters,
+        second_parameter__in=all_parameters,
+    ):
+        key = frozenset([pi.first_parameter_id, pi.second_parameter_id])
+        if pi.relation_type:
+            pair_lookup[key] = {'label': pi.get_relation_type_display(), 'type': pi.relation_type}
+
+    matrix = []
+    for param in all_parameters:
+        cells = []
+        for other in all_parameters:
+            if param.pk == other.pk:
+                cells.append({'label': '—', 'type': 'diag'})
+            else:
+                key = frozenset([param.pk, other.pk])
+                cells.append(pair_lookup.get(key, {'label': '?', 'type': None}))
+        matrix.append({'param': param, 'cells': cells})
+
+    return render(request, template_name='app/important_matrices/relation_type_matrix.html', context={
+        'goal_parameter': goal_parameter,
+        'parameters': all_parameters,
+        'matrix': matrix,
     })

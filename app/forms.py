@@ -37,5 +37,17 @@ class ParameterImportanceForm(forms.ModelForm):
         model = ParameterImportance
         fields = ['value']
         widgets = {
-            'value': forms.NumberInput(attrs={'class':'form-control', 'placeholder':'Введите важность'})
-        }
+            'value': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Введите важность'})
+               }
+
+
+class ParameterRelationTypeForm(forms.ModelForm):
+    relation_type = forms.ChoiceField(
+        choices=ParameterImportance.RELATION_TYPE_CHOICES,
+        widget=forms.RadioSelect,
+        label='Тип связи',
+    )
+
+    class Meta:
+        model = ParameterImportance
+        fields = ['relation_type']

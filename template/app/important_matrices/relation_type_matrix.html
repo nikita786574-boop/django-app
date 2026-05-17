@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Матрица типов связей — {{ goal_parameter.name }}{% endblock %}
+
+{% block stylein %}
+.cell-A1 { background-color: #fed7d7; color: #742a2a; font-weight: 600; }
+.cell-A2 { background-color: #c6f6d5; color: #1a4731; font-weight: 600; }
+.cell-A3 { background-color: #e2e8f0; color: #2d3748; }
+.cell-diag { background-color: #f7fafc; color: #a0aec0; }
+.cell-unknown { background-color: #fffbeb; color: #92400e; }
+table th, table td { text-align: center; vertical-align: middle; min-width: 110px; }
+table th { background-color: #edf2f7; }
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Таблица типов связей: {{ goal_parameter.name }}</h2>
+    <p class="text-muted mb-4">
+        <span class="badge" style="background:#fed7d7;color:#742a2a;">А1 — Противоречивая</span>&nbsp;
+        <span class="badge" style="background:#c6f6d5;color:#1a4731;">А2 — Согласованная</span>&nbsp;
+        <span class="badge" style="background:#e2e8f0;color:#2d3748;">А3 — Нейтральная</span>&nbsp;
+        <span class="badge" style="background:#fffbeb;color:#92400e;">? — Не определена</span>
+    </p>
+
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th></th>
+                    {% for param in parameters %}
+                    <th>{{ param.name }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in matrix %}
+                <tr>
+                    <th>{{ row.param.name }}</th>
+                    {% for cell in row.cells %}
+                    <td class="
+                        {% if cell.type == 'A1' %}cell-A1
+                        {% elif cell.type == 'A2' %}cell-A2
+                        {% elif cell.type == 'A3' %}cell-A3
+                        {% elif cell.type == 'diag' %}cell-diag
+                        {% else %}cell-unknown{% endif %}
+                    ">{{ cell.label }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-3">
+        <a href="{% url 'relation_type_process' goal_parameter.name goal_parameter.subsystem.name goal_parameter.number %}"
+           class="btn btn-primary">Заполнить / продолжить</a>
+        <a href="{% url 'important_matrices' goal_parameter.name goal_parameter.subsystem.name goal_parameter.number %}"
+           class="btn btn-outline-secondary ms-2">← Таблица важности</a>
+    </div>
+</div>
+{% endblock %}
