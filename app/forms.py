@@ -1,15 +1,34 @@
 from django import forms
 from .models import SubSystem, Parameters, ParameterRelations, ParameterImportance
+
+
+def _lock_number(form):
+    """Поле number отображается, но не редактируется — назначается автоматически."""
+    field = form.fields['number']
+    field.required = False
+    field.disabled = True
+    field.help_text = 'Назначается автоматически (порядковый номер в рамках уровня)'
+
+
 class SubSystemForm(forms.ModelForm):
     class Meta:
         model = SubSystem
         fields = ['name', 'description', 'parent','number','is_root']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _lock_number(self)
 
 
 class ParametersForm(forms.ModelForm):
     class Meta:
         model = Parameters
         fields = ['name', 'description', 'subsystem', 'number', 'measure']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _lock_number(self)
+
 
 class ParameterRelationsForm(forms.ModelForm):
     class Meta:

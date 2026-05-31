@@ -33,10 +33,10 @@
     </table>
 -->
     <div class="d-flex flex-column gap-2">
-        <a href="{% url 'important_matrices_process' goal_parameter.name goal_parameter.subsystem.name goal_parameter.number %}">
+        <a href="{% url 'important_matrices_process' goal_parameter.slug %}">
             <button type="button" class="btn btn-primary">Определить важность параметров</button>
         </a>
-        <a href="{% url 'relation_type_matrix' goal_parameter.name goal_parameter.subsystem.name goal_parameter.number %}">
+        <a href="{% url 'relation_type_matrix' goal_parameter.slug %}">
             <button type="button" class="btn btn-secondary">Таблица 27: типы связей</button>
         </a>
     </div>

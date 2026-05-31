@@ -7,7 +7,7 @@
 
 {% if sidebar %}
     {% block sidebar %}
-        {% buttons_sidebar node.name %}
+        {% buttons_sidebar node.slug %}
     {% endblock %}
 {% endif %}
 
@@ -138,6 +138,14 @@
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    function deleteAndReload(url, name) {
+        if (!confirm('Удалить «' + name + '»?')) return;
+        fetch(url, {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+            .then(() => location.reload())
+            .catch(() => location.reload());
+    }
+</script>
+<script>
     function main() {
         setTimeout(() => {
             const container = document.getElementById('tree-container');
@@ -178,7 +186,7 @@
 
             //Загружаем данные
             function second() {
-                const apiurl = "{% url 'api_goal_parameters_tree' goal_parameter.name node.name goal_parameter.number %}";
+                const apiurl = "{% url 'api_goal_parameters_tree' goal_parameter.slug %}";
 
                 fetch(apiurl)
                     .then(response => {
@@ -232,10 +240,10 @@
                                 if (!params || params.length === 0) {
                                     return "";
                                 }
-                                let paramBaseUrl = "{% url 'edit_parameter' 'SYSTEM_PLACEHOLDER' 'PARAM_PLACEHOLDER' %}".replace('SYSTEM_PLACEHOLDER', node.name);
+                                let paramBaseUrl = "{% url 'edit_parameter' 'PARAM_PLACEHOLDER' %}";
                                 let items = "";
                                 params.forEach(p => {
-                                    const url = paramBaseUrl.replace('PARAM_PLACEHOLDER', p.name);
+                                    const url = paramBaseUrl.replace('PARAM_PLACEHOLDER', p.slug);
 
                                     if (p.is_affect === true || p.is_goal) {
                                         items += `
@@ -327,29 +335,20 @@
                     if (data.description) {
                         html += `<em>${data.description}</em><br>`;
                     }
-                    const paramBaseUrl = "{% url 'edit_parameter' 'SYSTEM_PLACEHOLDER' 'PARAM_PLACEHOLDER' %}".replace('SYSTEM_PLACEHOLDER', node.name);
+                    const editParamBase = "{% url 'edit_parameter' 'PARAM_PLACEHOLDER' %}";
+                    const delParamBase = "{% url 'del_parameter' 'PARAM_PLACEHOLDER' %}";
                     if (data.parameters && data.parameters.length > 0) {
-
-                        html += `
-                <div class="dropdown mt-2">
-                    <button class="btn btn-primary dropdown-toggle"
-                            type="button"
-                            data-bs-toggle="dropdown">
-                        Параметры (${data.parameters.length})
-                    </button>
-
-                    <ul class="dropdown-menu">
-                `;
-
+                        html += `<br><strong>Параметры (${data.parameters.length}):</strong><br>`;
                         data.parameters.forEach(p => {
-                            const url = paramBaseUrl.replace('PARAM_PLACEHOLDER', p.name);
-                            html += `<li><a class="dropdown-item" href="${url}">${p.name}</a></li>`;
+                            const editUrl = editParamBase.replace('PARAM_PLACEHOLDER', p.slug);
+                            const delUrl = delParamBase.replace('PARAM_PLACEHOLDER', p.slug);
+                            html += `<div class="d-flex align-items-center gap-2 mb-1">
+                                <span>${p.name}</span>
+                                <a href="${editUrl}" class="btn btn-sm btn-outline-primary py-0">Изменить</a>
+                                <button class="btn btn-sm btn-outline-danger py-0"
+                                    onclick="deleteAndReload('${delUrl}', '${p.name}')">Удалить</button>
+                            </div>`;
                         });
-
-                        html += `
-                    </ul>
-                </div>
-                `;
                     }
 
                     if (data.children && data.children.length > 0) {
@@ -357,6 +356,11 @@
                         data.children.forEach(child => {
                             html += `- ${child.name}<br>`;
                         });
+                    }
+
+                    if (data.slug) {
+                        const editUrl = "{% url 'edit_subsystem' 'SLUG_PLACEHOLDER' %}".replace('SLUG_PLACEHOLDER', data.slug);
+                        html += `<br><a href="${editUrl}" class="btn btn-sm btn-primary mt-2">Перейти к изменению</a>`;
                     }
 
                     infoDiv.innerHTML = html;

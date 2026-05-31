@@ -51,9 +51,9 @@ table th { background-color: #edf2f7; }
     </div>
 
     <div class="mt-3">
-        <a href="{% url 'relation_type_process' goal_parameter.name goal_parameter.subsystem.name goal_parameter.number %}"
+        <a href="{% url 'relation_type_process' goal_parameter.slug %}"
            class="btn btn-primary">Заполнить / продолжить</a>
-        <a href="{% url 'important_matrices' goal_parameter.name goal_parameter.subsystem.name goal_parameter.number %}"
+        <a href="{% url 'important_matrices' goal_parameter.slug %}"
            class="btn btn-outline-secondary ms-2">← Таблица важности</a>
     </div>
 </div>

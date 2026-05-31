@@ -4,7 +4,7 @@
 
 {%if sidebar%}
     {%block sidebar%}
-        {%buttons_sidebar node.name%}
+        {%buttons_sidebar node.slug%}
     {%endblock%}
 {%endif%}
 
@@ -13,7 +13,7 @@
 {%block content%}
     <ul>
         <li>
-            <a href="/show/system/{{node.name}}"><button>{{node.name}}</button></a>
+            <a href="{% url 'show_system' node.slug %}"><button>{{node.name}}</button></a>
             {%if node.children.all%}
 
             {%include 'app/tree.html' with nodes=node.children.all%}

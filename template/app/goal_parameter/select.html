@@ -20,7 +20,7 @@
                 <td>{{param.subsystem.name}}</td>
                 <td>{{param.name}}</td>
                 <td>{{param.description|default:""}}</td>
-                <td><a href="{% url 'goal_parameter' param.subsystem.name param.name %}">Выбрать</a></td>
+                <td><a href="{% url 'goal_parameter' param.slug %}">Выбрать</a></td>
             </tr>
         {%endfor%}
     </table>

@@ -1,7 +1,7 @@
 <ul>
     {%for node in nodes%}
         <li>
-            <a href="/show/system/{{node.name}}"><button type="button">{{node.name}}</button></a>
+            <a href="{% url 'show_system' node.slug %}"><button type="button">{{node.name}}</button></a>
             {%if parameter_flag%}
                 {%if node.parameters.all%}
                     <ul>

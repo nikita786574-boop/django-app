@@ -6,7 +6,7 @@
 
 {% if sidebar %}
     {% block sidebar %}
-        {% buttons_sidebar node.name %}
+        {% buttons_sidebar node.slug %}
     {% endblock %}
 {% endif %}
 
@@ -138,6 +138,14 @@
 
 <script src="https://d3js.org/d3.v7.min.js"></script>
 <script>
+    function deleteAndReload(url, name) {
+        if (!confirm('Удалить «' + name + '»?')) return;
+        fetch(url, {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+            .then(() => location.reload())
+            .catch(() => location.reload());
+    }
+</script>
+<script>
     setTimeout(() => {
         const container = document.getElementById('tree-container');
         const width = container.clientWidth;
@@ -170,7 +178,7 @@
         }
 
         // Загрузка данных через API
-        const apiUrl = "{% url 'api_parameters_tree' node.name %}";
+        const apiUrl = "{% url 'api_parameters_tree' node.slug %}";
         let paramPositions = {};
         fetch(apiUrl)
             .then(response => {
@@ -279,6 +287,7 @@
                                     .attr('cy', paramY)
                                     .attr('r', 8)
                                     .attr('data-id', param.id)
+                                    .attr('data-slug', param.slug)
                                     .attr('data-name', param.name)
                                     .attr('data-description', param.description || '')
                                     .attr('data-measure', param.measure)
@@ -313,11 +322,19 @@
                 function showParameterInfo(circleElement) {
                     const circle = d3.select(circleElement);
                     const name = circleElement.getAttribute('data-name');
+                    const slug = circleElement.getAttribute('data-slug');
                     const description = circleElement.getAttribute('data-description');
                     const measure = circleElement.getAttribute('data-measure');
                     const number = circleElement.getAttribute('data-number');
                     const isGoal = circleElement.getAttribute('data-is-goal') === 'true';
                     const subsystem = circleElement.getAttribute('data-subsystem');
+
+                    const editUrl = slug
+                        ? "{% url 'edit_parameter' 'SLUG_PLACEHOLDER' %}".replace('SLUG_PLACEHOLDER', slug)
+                        : null;
+                    const deleteUrl = slug
+                        ? "{% url 'del_parameter' 'SLUG_PLACEHOLDER' %}".replace('SLUG_PLACEHOLDER', slug)
+                        : null;
 
                     const infoDiv = document.getElementById('info-text');
                     infoDiv.innerHTML = `
@@ -327,6 +344,11 @@
                         <p><strong>Единица измерения:</strong> ${measure}</p>
                         <p><strong>Номер:</strong> ${number}</p>
                         <p><strong>Целевой параметр:</strong> ${isGoal ? 'Да' : 'Нет'}</p>
+                        <div class="mt-2 d-flex gap-2">
+                            ${editUrl ? `<a href="${editUrl}" class="btn btn-sm btn-primary">Перейти к изменению</a>` : ''}
+                            ${deleteUrl ? `<button class="btn btn-sm btn-danger"
+                                onclick="deleteAndReload('${deleteUrl}', '${name}')">Удалить</button>` : ''}
+                        </div>
                     `;
 
                     // Обновляем выпадающий список

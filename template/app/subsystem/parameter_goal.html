@@ -6,10 +6,10 @@
         {% for paramet in parameters_goal %}
         <div class="card">
             <h4>
-                <a href="{%url 'parameters_tree_goal_show' paramet.name nodes.0.name%}">
+                <a href="{%url 'parameters_tree_goal_show' paramet.slug %}">
                     {{ paramet.name }}
                 </a>
-                <a href="{%url 'goal_parameters_tree' paramet.name nodes.0.name paramet.number %}">
+                <a href="{%url 'goal_parameters_tree' paramet.slug %}">
                     {{ paramet.name }}
                 </a>
             </h4>
@@ -19,8 +19,8 @@
             </p>
 
             <div class="card-actions">
-                <a href="/edit/subsystem/{{ system.name }}">✏️ Изменить</a>
-                <a href="/del/system/{{ system.name }}" class="danger">🗑 Удалить</a>
+                <a href="{% url 'edit_subsystem' nodes.0.slug %}">✏️ Изменить</a>
+                <a href="{% url 'del_system' nodes.0.slug %}" class="danger">🗑 Удалить</a>
             </div>
         </div>
         {% endfor %}

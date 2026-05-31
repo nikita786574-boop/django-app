@@ -44,17 +44,7 @@ main {
                 <article class="card">
 
                     <header class="card-header">
-                        <h4>
-                            <a href="/show/subsystem/{{ system.name }}">
-                                <span>{{ system.name }}</span>
-                            </a>
-                            <a href="{% url 'show_d3_tree' system.name %}">
-                                <span>{{system.name}}</span>
-                            </a>
-                            <a href="{% url 'show_parameters_tree' system.name %}">
-                                <span>{{system.name}} параметры</span>
-                            </a>
-                        </h4>
+                        <h4>{{ system.name }}</h4>
                     </header>
 
                     <p class="description">
@@ -62,11 +52,17 @@ main {
                     </p>
 
                     <footer class="card-actions">
-                        <a href="/edit/subsystem/{{ system.name }}">
+                        <a href="{% url 'show_d3_tree' system.slug %}" class="btn btn-sm btn-outline-secondary">
+                            🌳 Дерево подсистем
+                        </a>
+                        <a href="{% url 'show_parameters_tree' system.slug %}" class="btn btn-sm btn-outline-secondary">
+                            📊 Дерево параметров
+                        </a>
+                        <a href="{% url 'edit_subsystem' system.slug %}" class="btn btn-sm btn-outline-primary">
                             ✏️ Изменить
                         </a>
-
-                        <a href="/del/system/{{ system.name }}" class="danger">
+                        <a href="{% url 'del_system' system.slug %}" class="btn btn-sm btn-outline-danger"
+                            onclick="return confirm('Удалить систему «{{ system.name }}»?')">
                             🗑 Удалить
                         </a>
                     </footer>

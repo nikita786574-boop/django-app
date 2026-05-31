@@ -19,15 +19,15 @@ buttons_list = [
 ]
 
 
-def edit_subsystem(request, subsystem_name):
-    system = get_object_or_404(SubSystem, name=subsystem_name)
+def edit_subsystem(request, system_slug):
+    system = get_object_or_404(SubSystem, slug=system_slug)
     form = SubSystemForm(instance=system)
 
     if request.method == 'POST':
         form = SubSystemForm(request.POST, instance=system)
         if form.is_valid():
             name = dict(form.data)['name'][0]
-            if SubSystem.objects.filter(name=name).exists():
+            if SubSystem.objects.filter(name=name).exclude(pk=system.pk).exists():
                 form.add_error('name', 'Подсистема с таким именем уже существует')
             else:
                 form.save()
@@ -35,8 +35,8 @@ def edit_subsystem(request, subsystem_name):
     return render(request, 'app/form_template.html', context={'form': form})
 
 
-def edit_parameter(request, name_system, parameter_name):
-    parameter = get_object_or_404(Parameters, name=parameter_name, subsystem__name=name_system)
+def edit_parameter(request, parameter_slug):
+    parameter = get_object_or_404(Parameters, slug=parameter_slug)
     if request.method == 'POST':
         form = ParametersForm(request.POST, instance=parameter)
         if form.is_valid():
@@ -66,39 +66,39 @@ def subsystem_form(request):
     return render(request, template_name='app/form_template.html', context={'form': form, 'title': 'SubSystem Form'})
 
 
-def parameters_form(request, name_system=None):
+def parameters_form(request, system_slug=None):
     form = ParametersForm()
     if request.method == 'POST':
         form = ParametersForm(request.POST)
         if form.is_valid():
             form.save()
             return redirect('parameters_form')
-    if name_system is not None:
-        system = get_object_or_404(SubSystem, name=name_system)
+    if system_slug is not None:
+        system = get_object_or_404(SubSystem, slug=system_slug)
         form = ParametersForm(initial={'subsystem': system})
     return render(request, template_name='app/form_template.html', context={'form': form, 'title': 'Parameters form'})
 
 
-def parameter_relations_form(request, to_parameter=None, from_parameter=None):
+def parameter_relations_form(request, to_slug=None, from_slug=None):
     form = ParameterRelationsForm()
     if request.method == 'POST':
         form = ParameterRelationsForm(request.POST)
         if form.is_valid():
             form.save()
             return HttpResponseRedirect('/')
-    if request.method == 'GET' and to_parameter is not None and from_parameter is not None:
-        relation = get_object_or_404(ParameterRelations, to_parameter__name=to_parameter, from_parameter__name=from_parameter)
+    if request.method == 'GET' and to_slug is not None and from_slug is not None:
+        relation = get_object_or_404(ParameterRelations, to_parameter__slug=to_slug, from_parameter__slug=from_slug)
         form = ParameterRelationsForm(instance=relation)
     return render(request, template_name='app/form_template.html', context={'form': form, 'title': 'Parameter Relation Form'})
 
 
-def show_tree(request, name_system):
-    system = get_object_or_404(SubSystem, name=name_system)
+def show_tree(request, system_slug):
+    system = get_object_or_404(SubSystem, slug=system_slug)
     return render(request, template_name='app/show_tree.html', context={'node': system})
 
 
-def show_system(request, name_system):
-    system = get_object_or_404(SubSystem, name=name_system)
+def show_system(request, system_slug):
+    system = get_object_or_404(SubSystem, slug=system_slug)
     return render(request, template_name='app/show_system.html', context={'system': system})
 
 
@@ -107,9 +107,9 @@ def goal_parameter_select(request):
     return render(request, 'app/goal_parameter/select.html', {'parameters': parameters})
 
 
-def goal_parameter(request, name_system=None, name_goal_parameter=None):
-    if name_goal_parameter is not None and name_system is not None:
-        parameter = get_object_or_404(Parameters, name=name_goal_parameter, subsystem__name=name_system)
+def goal_parameter(request, parameter_slug=None):
+    if parameter_slug is not None:
+        parameter = get_object_or_404(Parameters, slug=parameter_slug)
         system = parameter.subsystem
 
         if not system:
@@ -118,10 +118,7 @@ def goal_parameter(request, name_system=None, name_goal_parameter=None):
                 'content': mark_safe('<h2>Параметр не привязан к какой-либо системе</h2>'),
             })
 
-        if ParameterRelations.objects.filter(
-            to_parameter__name=name_goal_parameter,
-            to_parameter__subsystem__name=name_system,
-        ).exists():
+        if ParameterRelations.objects.filter(to_parameter=parameter).exists():
             return render(request, 'app/with_context.html', context={
                 'title': 'Ошибка',
                 'content': mark_safe('<h2>Процесс этим параметром уже создан.</h2>'),
@@ -157,7 +154,7 @@ def goal_parameter(request, name_system=None, name_goal_parameter=None):
         parameters = Parameters.objects.exclude(subsystem=None)
         items = ''.join(
             f'<div>'
-            f'<a href="/goal_parameter/{escape(param.subsystem.name)}/{escape(param.name)}">'
+            f'<a href="{reverse("goal_parameter", kwargs={"parameter_slug": param.slug})}">'
             f'<button>{escape(param.name)}</button></a>'
             f'<p>{escape(str(param))}</p>'
             f'</div>'
@@ -170,20 +167,22 @@ def goal_parameter(request, name_system=None, name_goal_parameter=None):
         })
 
 
-def del_object(request, name_system=None, name_parameter=None, name_to_parameter=None, name_from_parameter=None):
-    if name_system is not None and name_parameter is None:
-        system = get_object_or_404(SubSystem, name=name_system)
+def del_object(request, parameter_slug=None, system_slug=None, to_slug=None, from_slug=None):
+    if system_slug is not None:
+        system = get_object_or_404(SubSystem, slug=system_slug)
         system.delete()
-    elif name_system is not None and name_parameter is not None:
-        parameter = get_object_or_404(Parameters, name=name_parameter, subsystem__name=name_system)
+    elif parameter_slug is not None:
+        parameter = get_object_or_404(Parameters, slug=parameter_slug)
         parameter.delete()
     else:
         parameter_relations = get_object_or_404(
             ParameterRelations,
-            to_parameter__name=name_to_parameter,
-            from_parameter__name=name_from_parameter,
+            to_parameter__slug=to_slug,
+            from_parameter__slug=from_slug,
         )
         parameter_relations.delete()
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'status': 'ok'})
     return HttpResponseRedirect('/')
 
 
@@ -225,13 +224,11 @@ def show_processes(request):
         })
 
 
-def form_goal_parameter(request, name_system, name_goal_parameter, name_min_subsystem, name_min_parameter):
+def form_goal_parameter(request, goal_slug, min_slug):
     rel = get_object_or_404(
         ParameterRelations,
-        to_parameter__name=name_goal_parameter,
-        to_parameter__subsystem__name=name_system,
-        from_parameter__name=name_min_parameter,
-        from_parameter__subsystem__name=name_min_subsystem,
+        to_parameter__slug=goal_slug,
+        from_parameter__slug=min_slug,
     )
 
     if request.method == 'POST':
@@ -241,16 +238,12 @@ def form_goal_parameter(request, name_system, name_goal_parameter, name_min_subs
             mins = find_min()
             if not mins:
                 return HttpResponseRedirect(reverse(viewname='main_page'))
-            goal_system = rel.to_parameter.subsystem.name
-            min_system = mins[0][0].subsystem.name
             return HttpResponseRedirect(
                 reverse(
                     viewname='form_goal_parameter',
                     kwargs={
-                        'name_system': goal_system,
-                        'name_goal_parameter': name_goal_parameter,
-                        'name_min_subsystem': min_system,
-                        'name_min_parameter': mins[0][0].name,
+                        'goal_slug': rel.to_parameter.slug,
+                        'min_slug': mins[0][0].slug,
                     },
                 )
             )
@@ -263,13 +256,13 @@ def form_goal_parameter(request, name_system, name_goal_parameter, name_min_subs
     })
 
 
-def parameters_tree(request, system):
-    system = get_object_or_404(SubSystem, name=system)
+def parameters_tree(request, system_slug):
+    system = get_object_or_404(SubSystem, slug=system_slug)
     return render(request, template_name='app/subsystem/parameter_tree.html', context={'nodes': [system], 'parameter_flag': True})
 
 
-def parameters_tree_goal(request, system):
-    system = get_object_or_404(SubSystem, name=system)
+def parameters_tree_goal(request, system_slug):
+    system = get_object_or_404(SubSystem, slug=system_slug)
     parameters = system.parameters.all()
     parameters_goal = [p for p in parameters if p.is_goal]
     return render(request, template_name='app/subsystem/parameter_goal.html', context={
@@ -279,11 +272,11 @@ def parameters_tree_goal(request, system):
     })
 
 
-def parameters_tree_goal_show(request, parameter, system):
-    """parameters_tree/goal/show/<str:parameter>/<str:system>"""
-    system = get_object_or_404(SubSystem, name=system)
+def parameters_tree_goal_show(request, parameter_slug):
+    """parameters_tree/goal/show/<slug:parameter_slug>"""
+    parameter = get_object_or_404(Parameters, slug=parameter_slug)
+    system = parameter.subsystem
     parameter_affect_goal = who_is_matter(parameter)
-    parameter = get_object_or_404(Parameters, name=parameter, subsystem__name=system)
     return render(request, template_name='app/goal_parameter/tree_goal_parameter.html', context={
         'nodes': [system],
         'goal_parameter': parameter,
@@ -326,9 +319,9 @@ def find_min():
 
 
 def who_is_matter(goal_param):
-    """Найти список параметров, которые влияют на целевой goal_param."""
+    """Найти список параметров, которые влияют на целевой goal_param (объект Parameters)."""
     relations = ParameterRelations.objects.filter(
-        is_affect=True, to_parameter__name=goal_param
+        is_affect=True, to_parameter=goal_param
     ).select_related('from_parameter')
     return [rel.from_parameter for rel in relations]
 
@@ -347,25 +340,25 @@ def all_parameters(request):
 
 # API для дерева D3
 
-def api_tree(request, name_system):
+def api_tree(request, system_slug):
     """API endpoint, возвращающий дерево в JSON-формате для D3.js."""
-    system = get_object_or_404(SubSystem, name=name_system)
+    system = get_object_or_404(SubSystem, slug=system_slug)
     return JsonResponse(system.to_dict())
 
 
-def show_d3_tree(request, name_system):
+def show_d3_tree(request, system_slug):
     """Рендер страницы с D3-деревом."""
-    system = get_object_or_404(SubSystem, name=name_system)
+    system = get_object_or_404(SubSystem, slug=system_slug)
     return render(request, 'app/d3/d3_tree.html', context={'node': system})
 
 
-def api_parameters_tree(request, name_system):
-    system = get_object_or_404(SubSystem, name=name_system)
+def api_parameters_tree(request, system_slug):
+    system = get_object_or_404(SubSystem, slug=system_slug)
     return JsonResponse(system.to_dict())
 
 
-def all_parameters_tree(request, name_system):
-    system = get_object_or_404(SubSystem, name=name_system)
+def all_parameters_tree(request, system_slug):
+    system = get_object_or_404(SubSystem, slug=system_slug)
     all_params = get_all_parameters_recursive(system)
     goal_parameters = []
     for param in all_params:
@@ -385,9 +378,9 @@ def all_parameters_tree(request, name_system):
     })
 
 
-def api_goal_parameters_tree(request, name_parameter, name_system, number):
-    parameter = get_object_or_404(Parameters, number=number, subsystem__name=name_system)
-    system = get_object_or_404(SubSystem, name=name_system)
+def api_goal_parameters_tree(request, parameter_slug):
+    parameter = get_object_or_404(Parameters, slug=parameter_slug)
+    system = parameter.subsystem
     if not parameter.is_goal:
         raise Http404()
     data = system.to_dict()
@@ -397,9 +390,9 @@ def api_goal_parameters_tree(request, name_parameter, name_system, number):
     return JsonResponse(data)
 
 
-def goal_parameters_tree(request, name_parameter, name_system, number):
-    system = get_object_or_404(SubSystem, name=name_system)
-    parameter = get_object_or_404(Parameters, name=name_parameter, number=number, subsystem__name=name_system)
+def goal_parameters_tree(request, parameter_slug):
+    parameter = get_object_or_404(Parameters, slug=parameter_slug)
+    system = parameter.subsystem
     return render(request, 'app/d3/goal_parameters_tree.html', {'node': system, 'goal_parameter': parameter})
 
 
@@ -423,10 +416,11 @@ def get_all_parameters_recursive(subsystem):
     return params
 
 
-def important_matrices(request, name_goal_parameter, name_system, number):
-    parameter = get_object_or_404(Parameters, name=name_goal_parameter, subsystem__name=name_system, number=number)
+def important_matrices(request, parameter_slug):
+    parameter = get_object_or_404(Parameters, slug=parameter_slug)
+    name_goal_parameter = parameter.name
     if request.method == 'GET':
-        all_relations = ParameterRelations.objects.filter(to_parameter__name=name_goal_parameter)
+        all_relations = ParameterRelations.objects.filter(to_parameter=parameter)
         same_level = []
         low_level = []
         for relation in all_relations:
@@ -436,7 +430,6 @@ def important_matrices(request, name_goal_parameter, name_system, number):
                 low_level.append(from_par)
             else:
                 same_level.append(from_par)
-
         count_same_level = len(same_level)
         count_low_level = len(low_level)
         matrix_same_level = [[] for _ in range(count_same_level + 2)]
@@ -481,11 +474,11 @@ def important_matrices(request, name_goal_parameter, name_system, number):
         })
 
 
-def new_view(request, name_goal_parameter, name_system, number):
-    goal_parameter = get_object_or_404(Parameters, name=name_goal_parameter, subsystem__name=name_system, number=number)
+def new_view(request, parameter_slug):
+    goal_parameter = get_object_or_404(Parameters, slug=parameter_slug)
     all_relations = ParameterRelations.objects.filter(
-        to_parameter__name=name_goal_parameter,
-        from_parameter__subsystem__name=name_system,
+        to_parameter=goal_parameter,
+        from_parameter__subsystem=goal_parameter.subsystem,
     )
     affected_parameters = [relation.from_parameter for relation in all_relations]
     all_parameters = affected_parameters + [goal_parameter]
@@ -535,12 +528,12 @@ def new_view(request, name_goal_parameter, name_system, number):
     })
 
 
-def relation_type_process(request, name_goal_parameter, name_system, number):
+def relation_type_process(request, parameter_slug):
     """Форма заполнения типа связи (А1/А2/А3) для каждой пары параметров."""
-    goal_parameter = get_object_or_404(Parameters, name=name_goal_parameter, subsystem__name=name_system, number=number)
+    goal_parameter = get_object_or_404(Parameters, slug=parameter_slug)
     all_relations = ParameterRelations.objects.filter(
-        to_parameter__name=name_goal_parameter,
-        from_parameter__subsystem__name=name_system,
+        to_parameter=goal_parameter,
+        from_parameter__subsystem=goal_parameter.subsystem,
     )
     affected_parameters = [rel.from_parameter for rel in all_relations]
     all_parameters = affected_parameters + [goal_parameter]
@@ -591,12 +584,12 @@ def relation_type_process(request, name_goal_parameter, name_system, number):
     })
 
 
-def relation_type_matrix(request, name_goal_parameter, name_system, number):
+def relation_type_matrix(request, parameter_slug):
     """Таблица 27: матрица типов связей (А1/А2/А3) между параметрами."""
-    goal_parameter = get_object_or_404(Parameters, name=name_goal_parameter, subsystem__name=name_system, number=number)
+    goal_parameter = get_object_or_404(Parameters, slug=parameter_slug)
     all_relations = ParameterRelations.objects.filter(
-        to_parameter__name=name_goal_parameter,
-        from_parameter__subsystem__name=name_system,
+        to_parameter=goal_parameter,
+        from_parameter__subsystem=goal_parameter.subsystem,
     )
     affected_parameters = [rel.from_parameter for rel in all_relations]
     all_parameters = affected_parameters + [goal_parameter]

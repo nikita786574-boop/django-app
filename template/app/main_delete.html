@@ -14,7 +14,7 @@
             </thead>
             {%for system in subsystems%}
                 <tr>
-                    <td><a href="/show/subsystem/{{system.name}}">{{system.name}}</a></td><td>{{system.description}}</td><td><a href="/edit/subsystem/{{system.name}}">Изменить</a></td><td><a href="/del/system/{{system.name}}">Удалить</a></td>
+                    <td><a href="{% url 'show_tree' system.slug %}">{{system.name}}</a></td><td>{{system.description}}</td><td><a href="{% url 'edit_subsystem' system.slug %}">Изменить</a></td><td><a href="{% url 'del_system' system.slug %}">Удалить</a></td>
                 </tr>
             {%empty%}
             <div>
@@ -39,7 +39,7 @@
             </thear>
         {%for parameter in parameters%}
                 <tr>
-                    <td>{{parameter.name}}</td><td>{{parameter.description}}</td><td><a href='/edit/parameter/{{parameter.subsystem.name}}/{{parameter.name}}'>Изменить</a></td><td><a href='/goal_parameter/{{parameter.subsystem.name}}/{{parameter.name}}'>Целевой параметер</a></td><td><a href="/del/parameter/{{parameter.subsystem.name}}/{{parameter.name}}">Удалить</a></td>
+                    <td>{{parameter.name}}</td><td>{{parameter.description}}</td><td><a href='{% url 'edit_parameter' parameter.slug %}'>Изменить</a></td><td><a href='{% url 'goal_parameter' parameter.slug %}'>Целевой параметер</a></td><td><a href="{% url 'del_parameter' parameter.slug %}">Удалить</a></td>
                 </tr>
         {%endfor%}
         </table>
@@ -56,7 +56,7 @@
         </thead>
         {%for parameter_rel in parameter_relations%}
             <tr>
-               <td>{{parameter_rel.to_parameter}}</td><td>{{parameter_rel.from_parameter}}</td><td><a href='/edit/parameter_relations/{{parameter_rel.to_parameter.name}}/{{parameter_rel.from_parameter.name}}'>Изменить</a></td><td><a href="del/parameter_relations/{{parameter_rel.to_parameter.name}}/{{parameter_rel.from_parameter.name}}">Удалить</a></td>
+               <td>{{parameter_rel.to_parameter}}</td><td>{{parameter_rel.from_parameter}}</td><td><a href='{% url 'parameter_relatoins_edit' parameter_rel.to_parameter.slug parameter_rel.from_parameter.slug %}'>Изменить</a></td><td><a href="{% url 'del_parameter_relations' parameter_rel.to_parameter.slug parameter_rel.from_parameter.slug %}">Удалить</a></td>
             </tr>
         {%endfor%}
     </table>
